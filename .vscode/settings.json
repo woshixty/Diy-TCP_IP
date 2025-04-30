@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.S": "asm-intel-x86-generic",
         "dbg.h": "c",
         "stdint.h": "c",
         "socket.h": "c",
@@ -52,7 +53,8 @@
         "random": "c",
         "functional": "c",
         "httpd.h": "c",
-        "netapi.h": "c"
+        "netapi.h": "c",
+        "sys_plat.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled",
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools"
