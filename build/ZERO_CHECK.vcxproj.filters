@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Code\Diy-TCP_IP\build\CMakeFiles\8c92d3f5a34cb6c937d288dc8a8bfb09\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{FE576A2F-D128-3E79-8AEE-0CB46B4A2706}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
