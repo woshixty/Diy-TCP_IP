@@ -13,7 +13,31 @@
 
 #define SYS_PLAT_WINDOWS 1
 
+static sys_sem_t sem;
+
+void thread1_entry(void* arg) {
+	while (1)
+	{
+		plat_printf("this is thread1: %s\n", (char*)arg);
+		sys_sleep(1000);
+		sys_sem_notify(sem);
+		sys_sleep(1000);
+	}
+}
+
+void thread2_entry(void* arg) {
+	while (1)
+	{
+		sys_sem_wait(sem, 0);
+		plat_printf("this is thread2: %s\n", (char*)arg);
+	}
+}
+
 int main (void) {
+	sem = sys_sem_create(0);
+	sys_thread_create(thread1_entry, "AAAA");
+    sys_thread_create(thread2_entry, "BBBB");
+	
 	pcap_t* pcap = pcap_device_open(netdev0_phy_ip, netdev0_hwaddr);
 	while (pcap)
 	{
@@ -36,7 +60,6 @@ int main (void) {
 		plat_memcpy(buffer, pkt_data, len);
 		buffer[0] = 1;
 		buffer[1] = 2;
-
 
 		if(pcap_inject(pcap, buffer, len) == -1)
 		{
