@@ -1,41 +1,50 @@
-﻿/**
- * @file main.c
- * @author lishutong (527676163@qq.com)
- * @brief 测试主程序，完成一些简单的测试主程序
- * @version 0.1
- * @date 2022-10-23
- *
- * @copyright Copyright (c) 2022
- * @note 该源码配套相应的视频课程，请见源码仓库下面的README.md
- */
-#include <stdio.h>
+﻿#include <stdio.h>
 #include "sys_plat.h"
 
 #define SYS_PLAT_WINDOWS 1
 
 static sys_sem_t sem;
+static int count;
+static sys_mutex_t mutex;
 
-void thread1_entry(void* arg) {
-	while (1)
-	{
-		plat_printf("this is thread1: %s\n", (char*)arg);
-		sys_sleep(1000);
-		sys_sem_notify(sem);
-		sys_sleep(1000);
-	}
+void thread1_entry (void* arg) {
+    // count的值大一些，效果才显著
+    for (int i = 0; i < 10000; i++) {
+        sys_mutex_lock(mutex);
+        count++;
+        sys_mutex_unlock(mutex);
+    }
+    plat_printf("thread 1: count = %d\n", count);
+
+    while (1) {
+        plat_printf("this is thread 1: %s\n", (char *)arg);
+        sys_sem_notify(sem);
+        sys_sleep(1000);
+    }
 }
 
 void thread2_entry(void* arg) {
-	while (1)
-	{
-		sys_sem_wait(sem, 0);
-		plat_printf("this is thread2: %s\n", (char*)arg);
-	}
+    // 注意循环的次数要和上面的一样
+    for (int i = 0; i < 10000; i++) {
+        sys_mutex_lock(mutex);
+        count--;
+        sys_mutex_unlock(mutex);
+    }
+    plat_printf("thread 2: count = %d\n", count);
+
+    while (1) {
+        sys_sem_wait(sem, 0);
+        plat_printf("this is thread 2: %s\n", (char *)arg);
+    }
 }
 
 int main (void) {
-	sem = sys_sem_create(0);
-	sys_thread_create(thread1_entry, "AAAA");
+    // 注意放在线程的创建的前面，以便线程运行前就准备好
+    sem = sys_sem_create(0);
+    mutex = sys_mutex_create();
+    plat_printf("thread main: count = %d\n", count);
+
+    sys_thread_create(thread1_entry, "AAAA");
     sys_thread_create(thread2_entry, "BBBB");
 	
 	pcap_t* pcap = pcap_device_open(netdev0_phy_ip, netdev0_hwaddr);
