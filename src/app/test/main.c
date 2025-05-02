@@ -1,5 +1,6 @@
 ﻿#include <stdio.h>
 #include "sys_plat.h"
+#include "echo/tcp_echo_client.h"
 
 #define SYS_PLAT_WINDOWS 1
 
@@ -93,6 +94,9 @@ void thread2_entry(void* arg) {
 }
 
 int main (void) {
+    // 测试tcp echo客户端
+    tcp_echo_client_start(friend0_ip, 5000);
+
     // 注意放在线程的创建的前面，以便线程运行前就准备好
     sem = sys_sem_create(0);
     mutex = sys_mutex_create();

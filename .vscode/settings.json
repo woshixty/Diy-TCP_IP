@@ -57,5 +57,9 @@
         "sys_plat.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled",
-    "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools"
+    "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
+    "terminal.integrated.defaultEncoding": "utf8",
+    "terminal.integrated.env.windows": {
+        "CHCP": "65001"
+    }
 }
