@@ -93,12 +93,22 @@ void thread2_entry(void* arg) {
     }
 }
 
+#include "netif_pcap.h"
+
+net_err_t netdev_init(void)
+{
+    netif_pcap_open();
+    return NET_ERR_OK;
+}
+
 int main (void) {
     // 初始化协议栈
     net_init();
 
     // 启动协议栈
     net_start();
+
+    netdev_init();
 
     while (1) {
         sys_sleep(10);
