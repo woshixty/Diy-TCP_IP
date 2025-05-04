@@ -1,5 +1,5 @@
 # cmake最低版本要求
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.10)
 
 # 设置工程的名字，生成的可执行文件也将使用该名称，如net.exe
 project(net)
@@ -7,23 +7,24 @@ set(CMAKE_C_STANDARD 99)
 
 LINK_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/npcap/Lib/x64          # win64使用
-    #${PROJECT_SOURCE_DIR}/lib/npcap/Lib/             # win32使用
+    #${PROJECT_SOURCE_DIR}/npcap/Lib/             # win32使用
 )
 
 # 给visual studio编译器使用的宏，Enable GCC debug
-add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+add_definitions(-D_CRT_SECURE_NO_WARNINGS -g)
 
 # 头文件搜索路径，使得c文件中可以直接使用#include "xxx.h"，而不必加前缀
 include_directories(
         ${PROJECT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/../
         ${PROJECT_SOURCE_DIR}/npcap/Include          # pcap路径
-        ${PROJECT_SOURCE_DIR}/src/net/net 
+        ${PROJECT_SOURCE_DIR}/src/net/net
         ${PROJECT_SOURCE_DIR}/src/plat
         ${PROJECT_SOURCE_DIR}/src/app
 )
 
 # 搜索src下面的所有源文件，生成文件列表
-file(GLOB_RECURSE SOURCE_LIST "src/*.c" "src/*.h")
+file(GLOB_RECURSE SOURCE_LIST "../sys_plat.c" "src/*.c" "src/*.h")
 
 # 将源文件列表加入到工程中
 add_executable(${PROJECT_NAME} ${SOURCE_LIST})
@@ -41,5 +42,3 @@ else()
     add_definitions(-DSYS_PLAT_LINUX)
     target_link_libraries(${PROJECT_NAME} pthread pcap)
 endif()
-
-

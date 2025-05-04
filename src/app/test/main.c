@@ -94,53 +94,13 @@ void thread2_entry(void* arg) {
 }
 
 int main (void) {
-    // 测试tcp echo客户端
-    tcp_echo_client_start(friend0_ip, 5000);
+    // 初始化协议栈
+    net_init();
 
-    // 注意放在线程的创建的前面，以便线程运行前就准备好
-    sem = sys_sem_create(0);
-    mutex = sys_mutex_create();
+    // 启动协议栈
+    net_start();
 
-    // 创建读写信号量
-    read_sem = sys_sem_create(0);
-    write_sem = sys_sem_create(sizeof(buffer));
-
-    sys_thread_create(thread1_entry, "AAAA");
-    sys_thread_create(thread2_entry, "BBBB");
-
-    while (1) {}
-	
-	pcap_t* pcap = pcap_device_open(netdev0_phy_ip, netdev0_hwaddr);
-	while (pcap)
-	{
-		static uint8_t buffer[1024];
-		static int counter = 0;
-		struct pcap_pkthdr* pkthdr;
-		const uint8_t* pkt_data;
-		
-		plat_printf("begin test: %d\n", counter++);
-		for (size_t i = 0; i < sizeof(buffer); i++)
-		{
-			buffer[i] = i;
-		}
-		
-		if(pcap_next_ex(pcap, &pkthdr, &pkt_data) != 1) {
-			continue;
-		}
-
-		int len = pkthdr->len > sizeof(buffer) ? sizeof(buffer) : pkthdr->len;
-		plat_memcpy(buffer, pkt_data, len);
-		buffer[0] = 1;
-		buffer[1] = 2;
-
-		if(pcap_inject(pcap, buffer, len) == -1)
-		{
-			plat_printf("pcap send: send packet failed %s\n", pcap_geterr(pcap));
-			break;
-		}
-	}
-	
-
-	printf("Hello, world");
-	return 0;
+    while (1) {
+        sys_sleep(10);
+    }
 }

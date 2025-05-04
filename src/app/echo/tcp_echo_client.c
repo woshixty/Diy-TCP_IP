@@ -16,8 +16,6 @@ int tcp_echo_client_start (const char* ip, int port) {
 
     // 创建套接字，使用流式传输，即tcp
 #if defined(SYS_PLAT_WINDOWS)
-    WSADATA wsdata;
-    WSAStartup(MAKEWORD(2, 2), &wsdata);
     SOCKET s = socket(AF_INET, SOCK_STREAM, 0);
 #else
     int s = socket(AF_INET, SOCK_STREAM, 0);
@@ -62,10 +60,10 @@ int tcp_echo_client_start (const char* ip, int port) {
         plat_printf(">>");
     }
 #if defined(SYS_PLAT_WINDOWS)
-    closesocket(s);
+        closesocket(s);
 #else
     close(s);
-#endif 
+#endif
     return 0;
 
 end:
@@ -73,8 +71,8 @@ end:
 #if defined(SYS_PLAT_WINDOWS)
     closesocket(s);
 #else
-    close(s);
-#endif 
+        close(s);
+#endif
     }
     return -1;
 }

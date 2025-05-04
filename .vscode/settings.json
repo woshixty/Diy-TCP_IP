@@ -54,7 +54,10 @@
         "functional": "c",
         "httpd.h": "c",
         "netapi.h": "c",
-        "sys_plat.h": "c"
+        "sys_plat.h": "c",
+        "stdio.h": "c",
+        "pcap.h": "c",
+        "windows.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled",
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
