@@ -94,6 +94,7 @@ void thread2_entry(void* arg) {
 }
 
 #include "netif_pcap.h"
+#include "dbg.h"
 
 net_err_t netdev_init(void)
 {
@@ -102,6 +103,8 @@ net_err_t netdev_init(void)
 }
 
 int main (void) {
+    dbg_info("dbg_info");
+
     // 初始化协议栈
     net_init();
 
