@@ -102,8 +102,12 @@ net_err_t netdev_init(void)
     return NET_ERR_OK;
 }
 
+#define DBG_TEST    DBG_LEVEL_INFO
+
 int main (void) {
-    dbg_info("dbg_info");
+    dbg_info(DBG_TEST, "info");
+    dbg_warning(DBG_TEST, "warning");
+    dbg_error(DBG_TEST, "error");
 
     // 初始化协议栈
     net_init();
