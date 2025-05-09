@@ -105,6 +105,9 @@ net_err_t netdev_init(void)
 #define DBG_TEST    DBG_LEVEL_INFO
 
 int main (void) {
+    dbg_assert(1 == 1, "failed");
+    dbg_assert(1 != 1, "failed");
+
     dbg_info(DBG_TEST, "info");
     dbg_warning(DBG_TEST, "warning");
     dbg_error(DBG_TEST, "error");

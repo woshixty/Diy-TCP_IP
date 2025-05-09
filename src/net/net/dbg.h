@@ -16,4 +16,10 @@ void dbg_print(int m_level, int s_level, const char* file, const char* func, int
 #define dbg_warning(module, fmt, ...) dbg_print(module, DBG_LEVEL_WARNING, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 #define dbg_error(module, fmt, ...) dbg_print(module, DBG_LEVEL_ERROR, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 
+#define dbg_assert(expr, msg) {\
+    if(!(expr)) {\
+        dbg_print(DBG_LEVEL_ERROR, DBG_LEVEL_ERROR, __FILE__, __FUNCTION__, __LINE__, "assert failed: "#expr", "msg); \
+        while (1);  \
+    }\
+}
 #endif
