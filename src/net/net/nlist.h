@@ -1,4 +1,4 @@
-#ifndef NLIST_H
+﻿#ifndef NLIST_H
 #define NLIST_H
 
 typedef struct _nlist_node_t
