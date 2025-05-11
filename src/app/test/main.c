@@ -135,6 +135,13 @@ void nlist_test (void) {
         tnode_t * tnode = nlist_entry(p, tnode_t, node);
         plat_printf("id:%d\n", tnode->id);
     }
+    
+    // 头部移除
+    plat_printf("remove first\n");
+    for (int i = 0; i < NODE_CNT; i++) {
+        p = nlist_remove_first(&list);
+        plat_printf("id:%d\n", nlist_entry(p, tnode_t, node)->id);
+   }
 }
 
 /**

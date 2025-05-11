@@ -75,4 +75,15 @@ void nlist_insert_first(nlist_t* list, nlist_node_t* node);
 
 #define nlist_for_each(node, list) for ((node) = (list)->first; (node); (node) = (node)->next)
 
+nlist_node_t* nlist_remove(nlist_t* list, nlist_node_t* node);
+
+static inline nlist_node_t* nlist_remove_first(nlist_t* list)
+{
+    nlist_node_t* first = nlist_first(list);
+    if(first) {
+        nlist_remove(list, first);
+    }
+    return first;
+}
+
 #endif
