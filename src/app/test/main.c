@@ -160,7 +160,19 @@ void nlist_test (void) {
     for (int i = 0; i < NODE_CNT; i++) {
         p = nlist_remove_last(&list);
         plat_printf("id:%d\n", nlist_entry(p, tnode_t, node)->id);
-   }
+    }   
+    
+    // 插入到指定结点之后
+    plat_printf("insert after\n");
+    for (int i = 0; i < NODE_CNT; i++) {
+        nlist_insert_after(&list, nlist_first(&list), &node[i].node);
+    }
+
+    // 遍历打印
+    nlist_for_each(p, &list) {
+        tnode_t * tnode = nlist_entry(p, tnode_t, node);
+        plat_printf("id:%d\n", tnode->id);
+    }
 }
 
 /**
