@@ -95,6 +95,7 @@ void thread2_entry(void* arg) {
 
 #include "netif_pcap.h"
 #include "dbg.h"
+#include "nlist.h"
 
 net_err_t netdev_init(void)
 {
@@ -102,15 +103,58 @@ net_err_t netdev_init(void)
     return NET_ERR_OK;
 }
 
+/**
+ * @brief 测试结点
+ */
+typedef struct _tnode_t {
+    int id;
+    nlist_node_t node;
+}tnode_t;
+
+/**
+ * @brief 链表访问测试
+ */
+void nlist_test (void) {
+    #define NODE_CNT        8
+
+    tnode_t node[NODE_CNT];
+    nlist_t list;
+    nlist_node_t * p;
+
+    nlist_init(&list);
+
+    // 头部插入
+    for (int i = 0; i < NODE_CNT; i++) {
+        node[i].id = i;
+        nlist_insert_first(&list, &node[i].node);
+    }
+
+    // // 遍历打印
+    // plat_printf("insert first\n");
+    // nlist_for_each(p, &list) {
+    //     tnode_t * tnode = nlist_entry(p, tnode_t, node);
+    //     plat_printf("id:%d\n", tnode->id);
+    // }
+}
+
+/**
+ * @brief 基本测试
+ */
+void basic_test(void) {
+    nlist_test();
+}
+
 #define DBG_TEST    DBG_LEVEL_INFO
 
 int main (void) {
-    dbg_assert(1 == 1, "failed");
-    dbg_assert(1 != 1, "failed");
+    // dbg_assert(1 == 1, "failed");
+    // dbg_assert(1 != 1, "failed");
 
-    dbg_info(DBG_TEST, "info");
-    dbg_warning(DBG_TEST, "warning");
-    dbg_error(DBG_TEST, "error");
+    // dbg_info(DBG_TEST, "info");
+    // dbg_warning(DBG_TEST, "warning");
+    // dbg_error(DBG_TEST, "error");
+
+    basic_test();
 
     // 初始化协议栈
     net_init();

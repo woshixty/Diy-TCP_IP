@@ -8,7 +8,7 @@ typedef struct _nlist_node_t
 } nlist_node_t;
 
 static inline void nlist_node_init(nlist_node_t* node) {
-    node->next = node->pre = nullptr;
+    node->next = node->pre = (nlist_node_t*) 0;
 }
 
 static inline nlist_node_t* nlist_node_next(nlist_node_t* node) {
@@ -37,14 +37,16 @@ static inline int nlist_is_empty(nlist_t* list) {
 
 static inline int nlist_count(nlist_t* list) {
     return list->count;
-} 
+}
 
 static inline nlist_node_t* nlist_first(nlist_t* list) {
     return list->first;
-} 
+}
 
 static inline nlist_node_t* nlist_last(nlist_t* list) {
     return list->last;
-} 
+}
+
+void nlist_insert_first(nlist_t* list, nlist_node_t* node);
 
 #endif
