@@ -135,11 +135,30 @@ void nlist_test (void) {
         tnode_t * tnode = nlist_entry(p, tnode_t, node);
         plat_printf("id:%d\n", tnode->id);
     }
-    
+
     // 头部移除
     plat_printf("remove first\n");
     for (int i = 0; i < NODE_CNT; i++) {
         p = nlist_remove_first(&list);
+        plat_printf("id:%d\n", nlist_entry(p, tnode_t, node)->id);
+   }
+
+    // 尾部插入
+    for (int i = 0; i < NODE_CNT; i++) {
+        nlist_insert_last(&list, &node[i].node);
+    }
+
+    // 遍历打印
+    plat_printf("insert last\n");
+    nlist_for_each(p, &list) {
+        tnode_t * tnode = nlist_entry(p, tnode_t, node);
+        plat_printf("id:%d\n", tnode->id);
+    }
+
+    // 尾部移除
+    plat_printf("remove last\n");
+    for (int i = 0; i < NODE_CNT; i++) {
+        p = nlist_remove_last(&list);
         plat_printf("id:%d\n", nlist_entry(p, tnode_t, node)->id);
    }
 }

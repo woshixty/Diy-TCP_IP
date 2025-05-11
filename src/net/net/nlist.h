@@ -49,6 +49,8 @@ static inline nlist_node_t* nlist_last(nlist_t* list) {
 
 void nlist_insert_first(nlist_t* list, nlist_node_t* node);
 
+void nlist_insert_last(nlist_t* list, nlist_node_t* node);
+
 /**
  * @brief 将结构体中某个字段的地址转换为所在结构体的指针
  * 例如：
@@ -84,6 +86,15 @@ static inline nlist_node_t* nlist_remove_first(nlist_t* list)
         nlist_remove(list, first);
     }
     return first;
+}
+
+static inline nlist_node_t* nlist_remove_last(nlist_t* list)
+{
+    nlist_node_t* last = nlist_last(list);
+    if(last) {
+        nlist_remove(list, last);
+    }
+    return last;
 }
 
 #endif
