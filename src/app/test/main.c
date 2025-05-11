@@ -129,12 +129,12 @@ void nlist_test (void) {
         nlist_insert_first(&list, &node[i].node);
     }
 
-    // // 遍历打印
-    // plat_printf("insert first\n");
-    // nlist_for_each(p, &list) {
-    //     tnode_t * tnode = nlist_entry(p, tnode_t, node);
-    //     plat_printf("id:%d\n", tnode->id);
-    // }
+    // 遍历打印
+    plat_printf("insert first\n");
+    nlist_for_each(p, &list) {
+        tnode_t * tnode = nlist_entry(p, tnode_t, node);
+        plat_printf("id:%d\n", tnode->id);
+    }
 }
 
 /**
