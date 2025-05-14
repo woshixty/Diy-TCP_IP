@@ -96,6 +96,7 @@ void thread2_entry(void* arg) {
 #include "netif_pcap.h"
 #include "dbg.h"
 #include "nlist.h"
+#include "mblock.h"
 
 net_err_t netdev_init(void)
 {
