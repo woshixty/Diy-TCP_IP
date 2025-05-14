@@ -2,6 +2,7 @@
 #define NLOCKER_H
 
 #include "sys_plat.h"
+#include "net_err.h"
 
 typedef enum _nlocker_type_t {
     NLOCKER_NONE,
@@ -19,5 +20,9 @@ typedef struct _nlocker_t
     
 } nlocker_t;
 
+net_err_t nlocker_init(nlocker_t* locaker, nlocker_type_t type);
+void nlocker_destory(nlocker_t* locaker);
+void nlocker_lock(nlocker_t* locaker);
+void nlocker_unlock(nlocker_t* locaker);
 
 #endif

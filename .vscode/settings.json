@@ -60,7 +60,8 @@
         "windows.h": "c",
         "netif_pcap.h": "c",
         "nlist.h": "c",
-        "mblock.h": "c"
+        "mblock.h": "c",
+        "nlocker.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled",
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
