@@ -200,7 +200,7 @@ void sys_sem_free(sys_sem_t sem) {
 
 int sys_sem_wait(sys_sem_t sem, uint32_t tmo_ms) {
     DWORD tmo = (tmo_ms == 0) ? INFINITE : tmo_ms;
-    DWORD  err = WaitForSingleObject(sem, tmo);
+    DWORD err = WaitForSingleObject(sem, tmo);
     if (err == WAIT_OBJECT_0) {
         return 0;
     }
