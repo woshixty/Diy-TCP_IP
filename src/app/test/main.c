@@ -188,7 +188,13 @@ void mblock_test()
         temp[i] = mblock_alloc(&blist, 0);
         plat_printf("block: %p, free_count: %d\n", temp[i], mblock_free_cnt(&blist));
     }
-    
+    for (size_t i = 0; i < 10; i++)
+    {
+        mblock_free(&blist, temp[i]);
+        plat_printf("free_count: %d\n", mblock_free_cnt(&blist));
+    }
+
+    mblock_destroy(&blist);
 }
 
 /**

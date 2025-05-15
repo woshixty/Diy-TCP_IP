@@ -26,7 +26,7 @@ net_err_t mblock_init(mblock_t* mblock, void* mem, int blk_size, int cnt, nlocke
         mblock->alloc_sem = sys_sem_create(cnt);
         if (mblock->alloc_sem == SYS_SEM_INVALID) {
             dbg_error(DBG_MBLOCK, "create sem failed.");
-            nlocker_destory(&mblock->locker);
+            nlocker_destroy(&mblock->locker);
             return NET_ERR_SYS;
         }
     }
@@ -75,4 +75,25 @@ int mblock_free_cnt(mblock_t* mblock)
     int count = nlist_count(&mblock->free_list);
     nlocker_unlock(&mblock->locker);
     return count;
+}
+
+void mblock_free(mblock_t* mblock, void* block)
+{
+    nlocker_lock(&mblock->locker);
+    nlist_insert_last(&mblock->free_list, (nlist_node_t *)block);
+    nlocker_unlock(&mblock->locker);
+
+    if(mblock->locker.type != NLOCKER_NONE)
+    {
+        sys_sem_notify(mblock->alloc_sem);
+    }
+}
+
+void mblock_destroy(mblock_t* mblock)
+{
+    if(mblock->locker.type != NLOCKER_NONE)
+    {
+        sys_sem_free(mblock->alloc_sem);
+        nlocker_destroy(&mblock->locker);
+    }
 }

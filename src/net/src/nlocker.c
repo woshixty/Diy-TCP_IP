@@ -15,7 +15,7 @@ net_err_t nlocker_init(nlocker_t* locaker, nlocker_type_t type)
     return NET_ERR_OK;
 }
 
-void nlocker_destory(nlocker_t* locaker)
+void nlocker_destroy(nlocker_t* locaker)
 {
     if(locaker->type == NLOCKER_THREAD)
     {
