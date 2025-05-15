@@ -142,7 +142,7 @@ void nlist_test (void) {
     for (int i = 0; i < NODE_CNT; i++) {
         p = nlist_remove_first(&list);
         plat_printf("id:%d\n", nlist_entry(p, tnode_t, node)->id);
-   }
+    }
 
     // 尾部插入
     for (int i = 0; i < NODE_CNT; i++) {
@@ -176,11 +176,19 @@ void nlist_test (void) {
     }
 }
 
+void mblock_test()
+{
+    mblock_t blist;
+    static uint8_t buffer[100][10];
+    mblock_init(&blist, buffer, 100, 10, NLOCKER_THREAD);
+}
+
 /**
  * @brief 基本测试
  */
 void basic_test(void) {
     nlist_test();
+    mblock_test();
 }
 
 #define DBG_TEST    DBG_LEVEL_INFO

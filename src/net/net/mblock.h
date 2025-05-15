@@ -12,5 +12,6 @@ typedef struct _mblock_t
     sys_sem_t alloc_sem;
 } mblock_t;
 
+net_err_t mblock_init(mblock_t* mblock, void* mem, int blk_size, int cnt, nlocker_type_t share_type);
 
 #endif
