@@ -5,15 +5,30 @@
 #include "net_cfg.h"
 #include "fixq.h"
 
-// static void * msg_tbl[EXMSG_MSG_CNT];       // 消息缓冲区
+static void * msg_tbl[EXMSG_MSG_CNT];       // 消息缓冲区
 static fixq_t msg_queue;                    // 消息队列
-// static exmsg_t msg_buffer[EXMSG_MSG_CNT];   // 消息块
+static exmsg_t msg_buffer[EXMSG_MSG_CNT];   // 消息块
 static mblock_t msg_block;                  // 消息分配器
 
 /**
  * @brief 核心线程通信初始化
  */
 net_err_t exmsg_init(void) {
+    dbg_info(DBG_MSG, "exmsg init");
+
+    net_err_t err = fixq_init(&msg_queue, msg_tbl, EXMSG_MSG_CNT, EXMSG_LOCKER);
+    if(err < 0)
+    {
+        dbg_error(DBG_MSG, "fix init failed.");
+    }
+
+    err = mblock_init(&msg_block, msg_buffer, sizeof(exmsg_t), EXMSG_MSG_CNT, EXMSG_LOCKER);
+    if(err < 0) {
+        dbg_error(DBG_MSG, "mblock init failed.");
+        return err;
+    }
+
+    dbg_info(DBG_MSG, "exmsg done");
     return NET_ERR_OK;
 }
 
