@@ -59,10 +59,14 @@ net_err_t exmsg_netif_in(void)
  */
 static void work_thread (void * arg) {
     // 注意要加上\n。否则由于C库缓存的关系，字符串会被暂时缓存而不输出显示
-    plat_printf("exmsg is running....\n");
+    dbg_info(DBG_MSG, "exmsg is running....");
 
     while (1) {
-        sys_sleep(1);
+        exmsg_t* msg = (exmsg_t*)fixq_recv(&msg_queue, 0);
+
+        plat_printf("recv a msg, type: %d, id: %d\n", msg->type, msg->id);
+
+        mblock_free(&msg_block, msg);
     }
 }
 

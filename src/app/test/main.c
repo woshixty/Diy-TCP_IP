@@ -215,7 +215,7 @@ int main (void) {
     // dbg_warning(DBG_TEST, "warning");
     // dbg_error(DBG_TEST, "error");
 
-    basic_test();
+    // basic_test();
 
     // 初始化协议栈
     net_init();

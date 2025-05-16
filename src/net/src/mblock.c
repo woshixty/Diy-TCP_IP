@@ -4,8 +4,11 @@
 #include "dbg.h"
 #include "nlist.h"
 
-net_err_t mblock_init(mblock_t* mblock, void* mem, int blk_size, int cnt, nlocker_type_t share_type)
-{
+/**
+ * @brief 初始化存储块管理器
+ * 将mem开始的内存区域划分成多个相同大小的内存块，然后用链表链接起来
+ */
+net_err_t mblock_init (mblock_t* mblock, void * mem, int blk_size, int cnt, nlocker_type_t share_type) {
     // 链表使用了nlist_node结构，所以大小必须合适
     dbg_assert(blk_size >= sizeof(nlist_node_t), "size error");
 
@@ -30,69 +33,70 @@ net_err_t mblock_init(mblock_t* mblock, void* mem, int blk_size, int cnt, nlocke
             return NET_ERR_SYS;
         }
     }
-    mblock->start = mem;
+
+
     return NET_ERR_OK;
 }
 
-void* mblock_alloc(mblock_t* mblock, int ms)
-{
-    if((ms < 0) || (mblock->locker.type == NLOCKER_NONE))
-    {
+/**
+ * 分配一个空闲的存储块
+ */
+void * mblock_alloc(mblock_t* mblock, int ms) {
+    // 无需等待的分配，查询后直接退出
+    if ((ms < 0) || (mblock->locker.type == NLOCKER_NONE)) {
         nlocker_lock(&mblock->locker);
         int count = nlist_count(&mblock->free_list);
-        if(count == 0)
-        {
-            nlocker_unlock(&mblock->locker);
+        nlocker_unlock(&mblock->locker);
+
+        // 没有，则直接返回了，无等待则直接退出
+        if (count == 0) {
             return (void*)0;
         }
-        else
-        {
-            nlist_node_t* block = nlist_remove_first(&mblock->free_list);
-            nlocker_unlock(&mblock->locker);
-            return block;
-        }
     }
-    else
-    {
-        if(sys_sem_wait(mblock->alloc_sem, ms) < 0)
-        {
-            return (void*)0;
-        }
-        else
-        {
-            nlocker_lock(&mblock->locker);
-            nlist_node_t* block = nlist_remove_first(&mblock->free_list);
-            nlocker_unlock(&mblock->locker);
-            return block;
-        }
+
+    // 消耗掉一个资源
+    if (mblock->locker.type != NLOCKER_NONE) {
+        sys_sem_wait(mblock->alloc_sem, ms);
     }
-    return (void*)0;
+
+    // 获取分配得到的项
+    nlocker_lock(&mblock->locker);
+    nlist_node_t* block = nlist_remove_first(&mblock->free_list);
+    nlocker_unlock(&mblock->locker);
+    return block;
 }
 
-int mblock_free_cnt(mblock_t* mblock)
-{
+
+/**
+ * 获取空闲块数量
+ */
+int mblock_free_cnt(mblock_t* mblock) {
     nlocker_lock(&mblock->locker);
     int count = nlist_count(&mblock->free_list);
     nlocker_unlock(&mblock->locker);
+
     return count;
 }
 
-void mblock_free(mblock_t* mblock, void* block)
-{
+/**
+ * 释放存储块
+ */
+void mblock_free(mblock_t* mblock, void* block) {
     nlocker_lock(&mblock->locker);
     nlist_insert_last(&mblock->free_list, (nlist_node_t *)block);
     nlocker_unlock(&mblock->locker);
 
-    if(mblock->locker.type != NLOCKER_NONE)
-    {
+    // 释放掉一个资源，通知其它任务该资源可用
+    if (mblock->locker.type != NLOCKER_NONE) {
         sys_sem_notify(mblock->alloc_sem);
     }
 }
 
-void mblock_destroy(mblock_t* mblock)
-{
-    if(mblock->locker.type != NLOCKER_NONE)
-    {
+/**
+ * 销毁存储管理块
+ */
+void mblock_destroy(mblock_t* mblock) {
+    if (mblock->locker.type != NLOCKER_NONE) {
         sys_sem_free(mblock->alloc_sem);
         nlocker_destroy(&mblock->locker);
     }
