@@ -1,11 +1,42 @@
 ﻿#include "net_plat.h"
 #include "exmsg.h"
+#include "mblock.h"
+#include "dbg.h"
+#include "net_cfg.h"
+#include "fixq.h"
+
+// static void * msg_tbl[EXMSG_MSG_CNT];       // 消息缓冲区
+static fixq_t msg_queue;                    // 消息队列
+// static exmsg_t msg_buffer[EXMSG_MSG_CNT];   // 消息块
+static mblock_t msg_block;                  // 消息分配器
 
 /**
  * @brief 核心线程通信初始化
  */
 net_err_t exmsg_init(void) {
     return NET_ERR_OK;
+}
+
+net_err_t exmsg_netif_in(void)
+{
+    exmsg_t* msg = mblock_alloc(&msg_block, -1);
+    if(!msg) {
+        dbg_warning(DBG_MSG, "no free msg");
+        return NET_ERR_MEM;
+    }
+    
+    static int id = 0;
+    msg->type = NET_EXMSG_NETIF_IN;
+    msg->id = id++;
+
+    net_err_t err = fixq_send(&msg_queue, msg, -1);
+    if(err < 0)
+    {
+        dbg_error(DBG_MSG, "fixq full");
+        mblock_free(&msg_block, msg);
+        return err;
+    }
+    return err;
 }
 
 /**

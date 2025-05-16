@@ -3,5 +3,6 @@
 
 #define DBG_MBLOCK      DBG_LEVEL_INFO
 #define DBG_QUEUE       DBG_LEVEL_INFO
+#define DBG_MSG         DBG_LEVEL_INFO
 
 #endif
