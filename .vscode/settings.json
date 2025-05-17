@@ -62,7 +62,8 @@
         "nlist.h": "c",
         "mblock.h": "c",
         "nlocker.h": "c",
-        "fixq.h": "c"
+        "fixq.h": "c",
+        "pktbuf.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled",
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
