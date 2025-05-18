@@ -11,6 +11,49 @@ static mblock_t block_list;
 static pktbuf_t pktbuf_buffer[PKTBUF_BUF_CNT];
 static mblock_t pktbuf_list;
 
+static inline int curr_blk_tail_free(pktblk_t* blk) {
+    return (int)((blk->payload + PKTBUF_BLK_SIZE) - (blk->data + blk->size));
+}
+
+#if DBG_DISP_ENABLE(DBG_BUF)
+static void display_check_buf(pktbuf_t* buf) {
+    if(!buf) {
+        dbg_error(DBG_BUF, "invalid buf, buf == 0");
+        return;
+    }
+    plat_printf("check buf %p : size %d\n", buf, buf->total_size);
+    pktblk_t* curr;
+    int index = 0, total_size = 0;
+    for (curr = pktbuf_first_blk(buf); curr; curr = pktblk_blk_next(curr)) {
+        plat_printf("%d: ", index++);
+
+        if((curr->data < curr->payload) || (curr->data >= curr->payload + PKTBUF_BLK_SIZE)) {
+            dbg_error(DBG_BUF, "bad block data");
+        }
+
+        int pre_size = (int)(curr->data - curr->payload);
+        plat_printf("pre: %d b, ", pre_size);
+
+        int used_size = curr->size;
+        plat_printf("used: %d b, ", used_size);
+
+        int free_size = curr_blk_tail_free(curr);
+        plat_printf("free: %d b\n", free_size);
+
+        int blk_total = pre_size + used_size + free_size;
+        if(blk_total != PKTBUF_BLK_SIZE) {
+            dbg_error(DBG_BUF, "bad block size: %d != %d", blk_total, PKTBUF_BLK_SIZE);
+        }
+        total_size += used_size;
+    }
+    if(total_size != buf->total_size) {
+        dbg_error(DBG_BUF, "bad buf size: %d != %d", total_size, buf->total_size);
+    }
+}
+#else
+#define display_check_buf(buf)
+#endif
+
 net_err_t pktbuf_init(void)
 {
     dbg_info(DBG_BUF, "init pktbuf");
@@ -116,7 +159,7 @@ pktbuf_t* pktbuf_alloc(int size)
     nlist_node_init(&buf->node);
 
     if(size) {
-        pktblk_t* block = pktblock_alloc_list(size, 0);
+        pktblk_t* block = pktblock_alloc_list(size, 1);
         if(!block) {
             mblock_free(&pktbuf_list, buf);
             return (pktbuf_t*)0;
@@ -124,6 +167,7 @@ pktbuf_t* pktbuf_alloc(int size)
         pktbuf_insert_blk_list(buf, block, 1);
     }
 
+    display_check_buf(buf);
     return buf;
 }
 
