@@ -74,11 +74,57 @@ static pktblk_t* pktblock_alloc_list(int size, int add_front)
     return first_block;
 }
 
+static void pktbuf_insert_blk_list(pktbuf_t* buf, pktblk_t* first_blk, int add_list) {
+    if(add_list) {
+        while (first_blk) {
+            pktblk_t* bext_blk = pktblk_blk_next(first_blk);
+
+            nlist_insert_last(&buf->blk_list, &first_blk->node);
+            buf->total_size += first_blk->size;
+
+            first_blk = bext_blk;
+        }
+    }
+    else {
+        pktblk_t* pre = (pktblk_t*)0;
+
+        while (first_blk) {
+            pktblk_t* next_pkt = pktblk_blk_next(first_blk);
+            if(pre) {
+                nlist_insert_after(&buf->blk_list, &pre->node, &first_blk->node);
+            } else {
+                nlist_insert_first(&buf->blk_list, &first_blk->node);
+            }
+
+            pre = first_blk;
+            first_blk = next_pkt;
+        }
+        
+    }
+}
+
 pktbuf_t* pktbuf_alloc(int size)
 {
-    pktblock_alloc_list(size, 0);
-    pktblock_alloc_list(size, 1);
-    return (pktbuf_t*)0;
+    pktbuf_t* buf = mblock_alloc(&pktbuf_list, -1);
+    if(!buf) {
+        dbg_error(DBG_BUF, "no buffer");
+        return (pktbuf_t*)0;
+    }
+
+    buf->total_size = 0;
+    nlist_init(&buf->blk_list);
+    nlist_node_init(&buf->node);
+
+    if(size) {
+        pktblk_t* block = pktblock_alloc_list(size, 0);
+        if(!block) {
+            mblock_free(&pktbuf_list, buf);
+            return (pktbuf_t*)0;
+        }
+        pktbuf_insert_blk_list(buf, block, 1);
+    }
+
+    return buf;
 }
 
 void pktbuf_free(pktbuf_t* buf)
