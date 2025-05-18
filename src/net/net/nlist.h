@@ -21,6 +21,7 @@ static inline nlist_node_t* nlist_node_pre(nlist_node_t* node) {
 
 static inline void nlist_node_set_next(nlist_node_t* node, nlist_node_t* next) {
     node->next = next;
+    next->pre = node;
 }
 
 typedef struct _nlist_t {

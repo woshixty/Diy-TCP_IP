@@ -97,6 +97,8 @@ void thread2_entry(void* arg) {
 #include "dbg.h"
 #include "nlist.h"
 #include "mblock.h"
+#include "pktbuf.h"
+#include "net_err.h"
 
 net_err_t netdev_init(void)
 {
@@ -197,12 +199,20 @@ void mblock_test()
     mblock_destroy(&blist);
 }
 
+void pktbuf_test()
+{
+    pktbuf_init();
+    pktbuf_t* buf = pktbuf_alloc(2000);
+    pktbuf_free(buf);
+}
+
 /**
  * @brief 基本测试
  */
 void basic_test(void) {
     // nlist_test();
-    mblock_test();
+    // mblock_test();
+    pktbuf_test();
 }
 
 #define DBG_TEST    DBG_LEVEL_INFO
@@ -215,13 +225,13 @@ int main (void) {
     // dbg_warning(DBG_TEST, "warning");
     // dbg_error(DBG_TEST, "error");
 
-    // basic_test();
+    basic_test();
 
     // 初始化协议栈
-    net_init();
+    net_err_t err = net_init();
 
     // 启动协议栈
-    net_start();
+    err = net_start();
 
     netdev_init();
 
