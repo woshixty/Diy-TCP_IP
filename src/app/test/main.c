@@ -204,6 +204,12 @@ void pktbuf_test()
     pktbuf_init();
     pktbuf_t* buf = pktbuf_alloc(2000);
     pktbuf_free(buf);
+
+    buf = pktbuf_alloc(2000);
+    for (int i = 0; i < 16; i++) {
+        pktbuf_add_header(buf, 33, 1);
+    }
+    
 }
 
 /**
