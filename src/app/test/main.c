@@ -212,14 +212,18 @@ void pktbuf_test()
     for (int i = 0; i < 16; i++) {
         pktbuf_remove_header(buf, 33);
     }
-
-    // buf = pktbuf_alloc(2000);
     for (int i = 0; i < 16; i++) {
         pktbuf_add_header(buf, 33, 0);
     }
     for (int i = 0; i < 16; i++) {
         pktbuf_remove_header(buf, 33);
     }
+
+    pktbuf_free(buf);
+    buf = pktbuf_alloc(8);
+    pktbuf_resize(buf, 32);
+    pktbuf_resize(buf, 288);
+    pktbuf_resize(buf, 4922);
 }
 
 /**
@@ -242,15 +246,13 @@ int main (void) {
     // dbg_error(DBG_TEST, "error");
 
     basic_test();
+    return 0;
 
     // 初始化协议栈
     net_err_t err = net_init();
-
     // 启动协议栈
     err = net_start();
-
     netdev_init();
-
     while (1) {
         sys_sleep(10);
     }

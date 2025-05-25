@@ -1,4 +1,5 @@
 ﻿#include "net.h"
+#include "net_err.h"
 #include "net_plat.h"
 #include "exmsg.h"
 #include "pktbuf.h"
