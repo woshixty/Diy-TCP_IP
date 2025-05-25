@@ -229,6 +229,11 @@ void pktbuf_test()
     pktbuf_resize(buf, 32);
     pktbuf_resize(buf, 0);
     pktbuf_free(buf);
+
+    buf = pktbuf_alloc(689);
+    pktbuf_t* sbuf = pktbuf_alloc(892);
+    pktbuf_join(buf, sbuf);
+    pktbuf_free(buf);
 }
 
 /**
