@@ -184,6 +184,7 @@ pktbuf_t* pktbuf_alloc(int size)
     }
 
     display_check_buf(buf);
+    pktbuf_reset_acc(buf);
     return buf;
 }
 
@@ -395,4 +396,12 @@ net_err_t pktbuf_set_cont(pktbuf_t* buf, int size)
 
     display_check_buf(buf);
     return NET_ERR_OK;
+}
+
+void pktbuf_reset_acc(pktbuf_t* buf) {
+    if(buf) {
+        buf->pos = 0;
+        buf->curr_blk = pktbuf_first_blk(buf);
+        buf->blk_offset = buf->curr_blk ? buf->curr_blk->data : (uint8_t*)0;
+    }
 }
