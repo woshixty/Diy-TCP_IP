@@ -505,7 +505,7 @@ net_err_t pktbuf_seek(pktbuf_t* buf, int offset)
 
         move_bytes = offset;
     } else {
-        move_bytes = offset = buf->pos;
+        move_bytes = offset - buf->pos;
     }
 
     while (move_bytes) {
@@ -514,6 +514,27 @@ net_err_t pktbuf_seek(pktbuf_t* buf, int offset)
 
         move_forward(buf, curr_move);
         move_bytes -= curr_move;
+    }
+    
+    return NET_ERR_OK;
+}
+
+net_err_t pktbuf_copy(pktbuf_t* dest, pktbuf_t* src, int size) {
+    if((total_blk_remain(dest) < size) || (total_blk_remain(src) < size)) {
+        return NET_ERR_SIZE;
+    }
+
+    while (size) {
+        int dest_remain = curr_blk_remain(dest);
+        int src_remain = curr_blk_remain(src);
+        int copy_size = dest_remain > src_remain ? src_remain : dest_remain;
+
+        copy_size = copy_size > size ? size : copy_size;
+        plat_memcpy(dest->blk_offset, src->blk_offset, copy_size);
+
+        move_forward(dest, copy_size);
+        move_forward(src, copy_size);
+        size -= copy_size;
     }
     
     return NET_ERR_OK;
