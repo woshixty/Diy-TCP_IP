@@ -1,6 +1,7 @@
 ﻿#include "net_plat.h"
 
 #include "dbg.h"
+#include "net_cfg.h"
 
 /**
  * @brief 平台初始化

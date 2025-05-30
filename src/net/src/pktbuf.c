@@ -96,7 +96,7 @@ static pktblk_t* pktblock_alloc(void)
 static void pktblock_free(pktblk_t* block)
 {
     nlocker_lock(&locker);
-    mblock_funree(&block_list, block);
+    mblock_free(&block_list, block);
     nlocker_lock(&locker);
 }
 

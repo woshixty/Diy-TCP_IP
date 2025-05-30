@@ -341,8 +341,8 @@ int main (void) {
     // dbg_warning(DBG_TEST, "warning");
     // dbg_error(DBG_TEST, "error");
 
-    basic_test();
-    return 0;
+    // basic_test();
+    // return 0;
 
     // 初始化协议栈
     net_err_t err = net_init();
