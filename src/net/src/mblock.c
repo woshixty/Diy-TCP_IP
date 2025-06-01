@@ -33,8 +33,7 @@ net_err_t mblock_init (mblock_t* mblock, void * mem, int blk_size, int cnt, nloc
             return NET_ERR_SYS;
         }
     }
-
-
+    
     return NET_ERR_OK;
 }
 
