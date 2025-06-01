@@ -99,6 +99,8 @@ void thread2_entry(void* arg) {
 #include "mblock.h"
 #include "pktbuf.h"
 #include "net_err.h"
+#include "ipaddr.h"
+#include "netif.h"
 
 net_err_t netdev_init(void)
 {
