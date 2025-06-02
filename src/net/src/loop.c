@@ -1,7 +1,7 @@
 #include "loop.h"
 #include "dbg.h"
 
-static loop_open (struct _netif_t* netif, void* data) {
+static net_err_t loop_open (struct _netif_t* netif, void* data) {
     netif->type = NETIF_TYPE_LOOP;
 
     return NET_ERR_OK;
@@ -30,6 +30,8 @@ net_err_t loop_init(void) {
     ipaddr_t ip, mask;
     ipaddr_from_str(&ip, "127.0.0.1");
     ipaddr_from_str(&mask, "255.0.0.0");
+
+    netif_set_addr(netif, &ip, &mask, (ipaddr_t*)0);
 
     dbg_info(DBG_NETIF, "init done");
     return NET_ERR_OK;
