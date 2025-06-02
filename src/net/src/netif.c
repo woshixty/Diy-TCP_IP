@@ -2,6 +2,7 @@
 #include "mblock.h"
 #include "net_cfg.h"
 #include "dbg.h"
+#include "pktbuf.h"
 
 static netif_t netif_buffer[NETIF_DEV_CNT];
 static mblock_t netif_mblock;
@@ -91,5 +92,36 @@ net_err_t netif_set_addr(netif_t* netif, ipaddr_t* ip, ipaddr_t* netmask, ipaddr
 net_err_t netif_set_hwaddr(netif_t* netif, const char* hwaddr, int len) {
     plat_memcpy(netif->hwaddr.addr, hwaddr, len);
     netif->hwaddr.len = len;
+    return NET_ERR_OK;
+}
+
+net_err_t netif_set_active(netif_t* netif) {
+    if(netif->state != NETIF_OPENED) {
+        dbg_error(DBG_NETIF, "netif is not opened");
+        return NET_ERR_STATE;
+    }
+
+    netif->state = NETIF_ACTIVE;
+    return NET_ERR_OK;
+}
+
+net_err_t netif_set_deactive(netif_t* netif) {
+    if(netif->state != NETIF_ACTIVE) {
+        dbg_error(DBG_NETIF, "netif is not actived");
+        return NET_ERR_STATE;
+    }
+
+    pktbuf_t* buf;
+    while ((buf = fixq_recv(&netif->in_q, -1)) != (pktbuf_t*)0) {
+        pktbuf_free(buf);
+    }
+    while ((buf = fixq_recv(&netif->out_q, -1)) != (pktbuf_t*)0) {
+        pktbuf_free(buf);
+    }
+    
+    if(netif_default == netif) {
+        netif_default = (netif_t*)0;
+    }
+    netif->state = NETIF_OPENED;
     return NET_ERR_OK;
 }

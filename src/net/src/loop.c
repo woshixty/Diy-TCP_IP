@@ -33,6 +33,8 @@ net_err_t loop_init(void) {
 
     netif_set_addr(netif, &ip, &mask, (ipaddr_t*)0);
 
+    netif_set_active(netif);
+
     dbg_info(DBG_NETIF, "init done");
     return NET_ERR_OK;
 }
