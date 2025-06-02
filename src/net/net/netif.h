@@ -44,5 +44,6 @@ typedef struct _netif_t {
 } netif_t;
 
 net_err_t netif_init(void);
+netif_t* netif_open(const char* dev_name);
 
 #endif

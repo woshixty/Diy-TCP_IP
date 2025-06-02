@@ -16,5 +16,6 @@ typedef struct _ipaddr_t {
     };
 } ipaddr_t;
 
+void ipaddr_set_any(ipaddr_t* ip);
 
 #endif

@@ -319,7 +319,6 @@ void pktbuf_test()
         }
     }
     
-
     pktbuf_free(dest);
     pktbuf_free(buf);
 }
@@ -330,27 +329,25 @@ void pktbuf_test()
 void basic_test(void) {
     // nlist_test();
     // mblock_test();
-    pktbuf_test();
+    // pktbuf_test();
+    netif_t* netif = netif_open("pcap");
 }
 
 #define DBG_TEST    DBG_LEVEL_INFO
 
 int main (void) {
-    // dbg_assert(1 == 1, "failed");
-    // dbg_assert(1 != 1, "failed");
-
-    // dbg_info(DBG_TEST, "info");
-    // dbg_warning(DBG_TEST, "warning");
-    // dbg_error(DBG_TEST, "error");
-
-    // basic_test();
-    // return 0;
-
     // 初始化协议栈
-    net_err_t err = net_init();
-    // 启动协议栈
-    err = net_start();
+    net_init();
+
+    // 基础测试
+    basic_test();
+
+    // 初始化网络接口
     netdev_init();
+    
+    // 启动协议栈
+    net_start();
+
     while (1) {
         sys_sleep(10);
     }
