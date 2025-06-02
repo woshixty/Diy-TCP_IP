@@ -45,7 +45,7 @@ typedef struct _netif_t {
         NETIF_ACTIVE,
     } state;
 
-    netif_ops_t* ops;
+    const netif_ops_t* ops;
     void* ops_data;
 
     nlist_node_t node;

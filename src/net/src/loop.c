@@ -27,6 +27,10 @@ net_err_t loop_init(void) {
         dbg_error(DBG_NETIF, "open loop error");
     }
 
+    ipaddr_t ip, mask;
+    ipaddr_from_str(&ip, "127.0.0.1");
+    ipaddr_from_str(&mask, "255.0.0.0");
+
     dbg_info(DBG_NETIF, "init done");
     return NET_ERR_OK;
 }
