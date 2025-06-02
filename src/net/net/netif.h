@@ -19,6 +19,15 @@ typedef enum _netif_type_t {
     NETIF_TYPE_SIZE
 } netif_type_t;
 
+struct _netif_t;
+typedef struct _netif_ops_t {
+    net_err_t (*open) (struct _netif_t* netif, void* data);
+    void (*close) (struct _netif_t* netif);
+
+    net_err_t (*xmit) (struct _netif_t* netif);
+} netif_ops_t;
+
+
 typedef struct _netif_t {
     char name[NETIF_NAME_SIZE];
     netif_hwaddr_t hwaddr;
@@ -36,7 +45,11 @@ typedef struct _netif_t {
         NETIF_ACTIVE,
     } state;
 
+    netif_ops_t* ops;
+    void* ops_data;
+
     nlist_node_t node;
+    
     fixq_t in_q;
     void* in_q_buf[NETIF_INQ_SIZE];
     fixq_t out_q;
@@ -44,6 +57,6 @@ typedef struct _netif_t {
 } netif_t;
 
 net_err_t netif_init(void);
-netif_t* netif_open(const char* dev_name);
+netif_t* netif_open(const char* dev_name, const netif_ops_t* ops, void* ops_data);
 
 #endif
