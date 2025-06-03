@@ -340,7 +340,7 @@ int main (void) {
     net_init();
 
     // 基础测试
-    basic_test();
+    // basic_test();
 
     // 初始化网络接口
     netdev_init();

@@ -32,7 +32,7 @@ net_err_t exmsg_init(void) {
     return NET_ERR_OK;
 }
 
-net_err_t exmsg_netif_in(void)
+net_err_t exmsg_netif_in(netif_t* netif)
 {
     exmsg_t* msg = mblock_alloc(&msg_block, -1);
     if(!msg) {

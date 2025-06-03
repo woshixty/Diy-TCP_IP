@@ -10,7 +10,7 @@ void recv_thread(void * arg)
     {
         sys_sleep(1);
 
-        exmsg_netif_in();
+        exmsg_netif_in((netif_t*)0);
     }
 }
 
