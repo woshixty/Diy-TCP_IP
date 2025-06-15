@@ -434,7 +434,7 @@ PCAP_AVAILABLE_1_0
 PCAP_API int	pcap_activate(pcap_t *);
 
 PCAP_AVAILABLE_1_2
-PCAP_API int	pcap_list_tstamp_types(pcap_t *, int **);
+PCAP_API int	pcap_nlist_tstamp_types(pcap_t *, int **);
 
 PCAP_AVAILABLE_1_2
 PCAP_API void	pcap_free_tstamp_types(int *);
@@ -632,7 +632,7 @@ PCAP_AVAILABLE_1_0
 PCAP_API int	pcap_datalink_ext(pcap_t *);
 
 PCAP_AVAILABLE_0_8
-PCAP_API int	pcap_list_datalinks(pcap_t *, int **);
+PCAP_API int	pcap_nlist_datalinks(pcap_t *, int **);
 
 PCAP_AVAILABLE_0_8
 PCAP_API int	pcap_set_datalink(pcap_t *, int);
@@ -1191,7 +1191,7 @@ PCAP_API struct pcap_samp *pcap_setsampling(pcap_t *p);
  */
 
 /* Maximum length of an host name (needed for the RPCAP active mode) */
-#define RPCAP_HOSTLIST_SIZE 1024
+#define RPCAP_HOSTnlist_SIZE 1024
 
 PCAP_AVAILABLE_1_9
 PCAP_API SOCKET	pcap_remoteact_accept(const char *address, const char *port,
