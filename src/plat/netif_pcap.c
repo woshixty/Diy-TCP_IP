@@ -1,6 +1,8 @@
 ﻿#include "netif_pcap.h"
 #include "sys_plat.h"
 #include "exmsg.h"
+#include "pcap.h"
+#include "dbg.h"
 
 void recv_thread(void * arg)
 {
@@ -24,9 +26,37 @@ void xmit_thread(void * arg)
     }
 }
 
-net_err_t netif_pcap_open(void)
-{
-    sys_thread_create(recv_thread, (void*) 0);
-    sys_thread_create(xmit_thread, (void*) 0);
+static net_err_t netif_pcap_open (struct _netif_t* netif, void* data) {
+    pcap_data_t* dev_data = (pcap_data_t*)data;
+
+    pcap_t* pcap = pcap_device_open(dev_data->ip, dev_data->hwaddr);
+    if(pcap == (pcap_t*)0) {
+        dbg_error(DBG_NETIF, "pcap open failed! name: %s\n", netif->name);
+        return NET_ERR_IO;
+    }
+
+    netif->type = NETIF_TYPE_ETHER;
+    netif->mtu = 1500;
+    netif->ops_data = pcap;
+    netif_set_hwaddr(netif, dev_data->hwaddr, 6);
+
+    sys_thread_create(recv_thread, netif);
+    sys_thread_create(xmit_thread, netif);
+
     return NET_ERR_OK;
 }
+
+static void netif_pcap_close (struct _netif_t* netif) {
+    pcap_t* pcap = (pcap_t*)netif->ops_data;
+    pcap_close(pcap);
+}
+
+static net_err_t netif_pcap_xmit (struct _netif_t* netif) {
+    return NET_ERR_OK;
+}
+
+const netif_ops_t netdev_ops = {
+    .open = netif_pcap_open,
+    .close = netif_pcap_close,
+    .xmit = netif_pcap_xmit,
+};
