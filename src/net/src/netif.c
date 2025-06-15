@@ -105,6 +105,8 @@ netif_t* netif_open(const char* dev_name, const netif_ops_t* ops, void* ops_data
         return (netif_t*)0;
     }
 
+    netif->ops = ops;
+    netif->ops_data = ops_data;
     err = ops->open(netif, ops_data);
     if(err < 0) {
         dbg_error(DBG_NETIF, "netif ops open failed.");
@@ -116,9 +118,6 @@ netif_t* netif_open(const char* dev_name, const netif_ops_t* ops, void* ops_data
         dbg_error(DBG_NETIF, "netif type unknown.");
         goto free_return;
     }
-
-    netif->ops = ops;
-    netif->ops_data = ops_data;
 
     nlist_insert_last(&netif_list, &netif->node);
     display_netif_list();

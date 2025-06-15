@@ -5,18 +5,24 @@
 #include "nlist.h"
 #include "netif.h"
 
+typedef struct _msg_netif_t {
+    netif_t* netif;
+} msg_netif_t;
+
 /**
  * @brief 传递给核心线程的消息
  */
 typedef struct _exmsg_t {
-    nlist_node_t temp;          // 临时使用
+    nlist_node_t node;          // 临时使用
     
     // 消息类型
     enum {
         NET_EXMSG_NETIF_IN,     // 网络接口数据消息
     } type;
 
-    int id;
+    union {
+        msg_netif_t netif;  
+    };
 }exmsg_t;
 
 net_err_t exmsg_init(void);
