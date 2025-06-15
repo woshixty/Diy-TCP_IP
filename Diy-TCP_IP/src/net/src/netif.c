@@ -331,7 +331,7 @@ net_err_t netif_out(netif_t* netif, ipaddr_t * ipaddr, pktbuf_t* buf) {
         dbg_info(DBG_NETIF, "send to netif queue failed. err: %d", err);
         return err;
     }
-
+    
     // 启动发送
     return netif->ops->xmit(netif);
 }

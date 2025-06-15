@@ -64,10 +64,6 @@ net_err_t loop_init(void) {
     netif_set_addr(netif, &ip, &mask, (ipaddr_t*)0);
     netif_set_active(netif);
 
-    // 测试程序
-    pktbuf_t * buf = pktbuf_alloc(100);
-    netif_out(netif, NULL, buf);
-
     dbg_info(DBG_NETIF, "init done");
     return NET_ERR_OK;;
 }
