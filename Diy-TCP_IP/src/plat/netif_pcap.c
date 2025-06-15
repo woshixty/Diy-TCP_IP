@@ -47,9 +47,26 @@ void recv_thread(void* arg) {
  */
 void xmit_thread(void* arg) {
     plat_printf("xmit thread is running...\n");
-
+    
+    netif_t* netif = (netif_t*)arg;
+    pcap_t* pcap = (pcap_t*)netif->ops_data;
+    static uint8_t rw_buffer[1500+6+6+2];
     while (1) {
-        sys_sleep(1);
+        pktbuf_t* buf = netif_get_out(netif, 0);
+        if(buf == (pktbuf_t*)0) {
+            continue;
+        }
+
+        int total_size = buf->total_size;
+        plat_memset(rw_buffer, 0, sizeof(rw_buffer));
+        pktbuf_read(buf, rw_buffer, total_size);
+        pktbuf_free(buf);
+
+        if(pcap_inject(pcap, rw_buffer, total_size) == -1) {
+            printf("pcap send failed: %s\n", pcap_geterr(pcap));
+            printf("pcap send failed, size: %d\n", total_size);
+            continue;
+        }
     }
 }
 
@@ -61,7 +78,7 @@ void xmit_thread(void* arg) {
 static net_err_t netif_pcap_open(struct _netif_t* netif, void* ops_data) {
     // 打开pcap设备
     pcap_data_t* dev_data = (pcap_data_t*)ops_data;
-    pcap_t * pcap = pcap_device_open(dev_data->ip, dev_data->hwaddr);
+    pcap_t* pcap = pcap_device_open(dev_data->ip, dev_data->hwaddr);
     if (pcap == (pcap_t*)0) {
         dbg_error(DBG_NETIF, "pcap open failed! name: %s\n", netif->name);
         return NET_ERR_IO;
