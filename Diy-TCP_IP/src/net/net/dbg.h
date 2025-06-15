@@ -4,19 +4,19 @@
 #include "net_cfg.h"
 #include "net_plat.h"
 
-// 璋冭瘯淇℃伅鐨勬樉绀烘牱寮忚缃?
-#define DBG_STYLE_RESET       "\033[0m"       // 澶嶄綅鏄剧ず
-#define DBG_STYLE_ERROR       "\033[31m"      // 绾㈣壊鏄剧ず
-#define DBG_STYLE_WARNING     "\033[33m"      // 榛勮壊鏄剧ず
+// 调试信息的显示样式设置
+#define DBG_STYLE_RESET       "\033[0m"       // 复位显示
+#define DBG_STYLE_ERROR       "\033[31m"      // 红色显示
+#define DBG_STYLE_WARNING     "\033[33m"      // 黄色显示
 
-// 寮€鍚殑淇℃伅杈撳嚭閰嶇疆锛屽€艰秺澶э紝杈撳嚭鐨勮皟璇曚俊鎭秺澶?
-#define DBG_LEVEL_NONE           0         // 涓嶅紑鍚换浣曡緭鍑?
-#define DBG_LEVEL_ERROR          1         // 鍙紑鍚敊璇俊鎭緭鍑?
-#define DBG_LEVEL_WARNING        2         // 寮€鍚敊璇拰璀﹀憡淇℃伅杈撳嚭
-#define DBG_LEVEL_INFO           3         // 寮€鍚敊璇€佽鍛娿€佷竴鑸俊鎭緭鍑?
+// 开启的信息输出配置，值越大，输出的调试信息越多
+#define DBG_LEVEL_NONE           0         // 不开启任何输出
+#define DBG_LEVEL_ERROR          1         // 只开启错误信息输出
+#define DBG_LEVEL_WARNING        2         // 开启错误和警告信息输出
+#define DBG_LEVEL_INFO           3         // 开启错误、警告、一般信息输出
 
 /**
- * @brief 鎵撳嵃璋冭瘯淇℃伅
+ * @brief 打印调试信息
  */
 void dbg_print(int m_level, int s_level, const char* file, const char* func, int line, const char* fmt, ...);
 
@@ -24,21 +24,21 @@ void dump_mac(const char* msg, const uint8_t* mac);
 void dump_ip_buf(const char* msg, const uint8_t* ip);
 
 /**
- * @brief 涓嶅悓鐨勮皟璇曡緭鍑哄畯
- * __FILE__ __FUNCTION__, __LINE__涓篊璇█鍐呯疆鐨勫畯
+ * @brief 不同的调试输出宏
+ * __FILE__ __FUNCTION__, __LINE__为C语言内置的宏
 */
 #define dbg_info(module, fmt, ...)  dbg_print(module, DBG_LEVEL_INFO, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 #define dbg_error(module, fmt, ...)  dbg_print(module, DBG_LEVEL_ERROR, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 #define dbg_warning(module, fmt, ...) dbg_print(module, DBG_LEVEL_WARNING, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 
 /**
- * @brief 鏂█鍒ゆ柇
- * 涓嬮潰鐢ㄥぇ鎷彿鍖呭惈锛岃繖鏍烽伩鍏峣f鍙兘涓庡悗闈㈠彲鑳界殑else鐩歌竟锛屼緥濡傦細
+ * @brief 断言判断
+ * 下面用大括号包含，这样避免if可能与后面可能的else相边，例如：
  * if (xxx)
- *    dbg_assert   澶氫釜浜唅f (xxx) 
+ *    dbg_assert   多个了if (xxx) 
  * else
  *    xxxx
- * 涓嶈繃涓€鑸垜浼氱敤澶ф嫭鍙峰寘鍚玦f涓嬮潰鐨勮鍙ワ紝鎵€浠ュ嚭閿欏彲鑳芥€т笉澶?
+ * 不过一般我会用大括号包含if下面的语句，所以出错可能性不大
  */
 #define dbg_assert(expr, msg)   {\
     if (!(expr)) {\

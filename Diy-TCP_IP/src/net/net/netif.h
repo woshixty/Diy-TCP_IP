@@ -7,17 +7,17 @@
 #include "pktbuf.h"
 
 /**
- * @brief 纭欢鍦板潃
+ * @brief 硬件地址
  */
 typedef struct _netif_hwaddr_t {
-    uint8_t len;                            // 鍦板潃闀垮害
-    uint8_t addr[NETIF_HWADDR_SIZE];        // 鍦板潃绌洪棿
+    uint8_t len;                            // 地址长度
+    uint8_t addr[NETIF_HWADDR_SIZE];        // 地址空间
 }netif_hwaddr_t;
 
 /**
- * @brief 缃戠粶鎺ュ彛鏀寔鐨勬搷浣?
+ * @brief 网络接口支持的操作
  */
-struct _netif_t;       // 鍓嶇疆澹版槑锛岄伩鍏嶇紪璇戝嚭閿?
+struct _netif_t;       // 前置声明，避免编译出错
 typedef struct _netif_ops_t {
     net_err_t(*open) (struct _netif_t* netif, void * data);
     void (*close) (struct _netif_t* netif);
@@ -26,47 +26,47 @@ typedef struct _netif_ops_t {
 }netif_ops_t;
 
 /**
- * @brief 缃戠粶鎺ュ彛绫诲瀷
+ * @brief 网络接口类型
  */
 typedef enum _netif_type_t {
-    NETIF_TYPE_NONE = 0,                // 鏃犵被鍨嬬綉缁滄帴鍙?
-    NETIF_TYPE_ETHER,                   // 浠ュお缃?
-    NETIF_TYPE_LOOP,                    // 鍥炵幆鎺ュ彛
+    NETIF_TYPE_NONE = 0,                // 无类型网络接口
+    NETIF_TYPE_ETHER,                   // 以太网
+    NETIF_TYPE_LOOP,                    // 回环接口
 
     NETIF_TYPE_SIZE,
 }netif_type_t;
 
 /**
- * @brief 缃戠粶鎺ュ彛灞備唬鐮?
+ * @brief 网络接口层代码
  */
 typedef struct _netif_t {
-    char name[NETIF_NAME_SIZE];             // 缃戠粶鎺ュ彛鍚嶅瓧
+    char name[NETIF_NAME_SIZE];             // 网络接口名字
 
-    netif_hwaddr_t hwaddr;                  // 纭欢鍦板潃
-    ipaddr_t ipaddr;                        // ip鍦板潃
-    ipaddr_t netmask;                       // 鎺╃爜
-    ipaddr_t gateway;                       // 缃戝叧
+    netif_hwaddr_t hwaddr;                  // 硬件地址
+    ipaddr_t ipaddr;                        // ip地址
+    ipaddr_t netmask;                       // 掩码
+    ipaddr_t gateway;                       // 网关
 
-    enum {                                  // 鎺ュ彛鐘舵€?
-        NETIF_CLOSED,                       // 宸插叧娉?
-        NETIF_OPENED,                       // 宸茬粡鎵撳紑
-        NETIF_ACTIVE,                       // 婵€娲荤姸鎬?
+    enum {                                  // 接口状态
+        NETIF_CLOSED,                       // 已关注
+        NETIF_OPENED,                       // 已经打开
+        NETIF_ACTIVE,                       // 激活状态
     }state;
 
-    netif_type_t type;                      // 缃戠粶鎺ュ彛绫诲瀷
-    int mtu;                                // 鏈€澶т紶杈撳崟鍏?
+    netif_type_t type;                      // 网络接口类型
+    int mtu;                                // 最大传输单元
 
-    const netif_ops_t* ops;                 // 椹卞姩绫诲瀷
-    void* ops_data;                         // 搴曞眰绉佹湁鏁版嵁
+    const netif_ops_t* ops;                 // 驱动类型
+    void* ops_data;                         // 底层私有数据
 
-    nlist_node_t node;                       // 閾炬帴缁撶偣锛岀敤浜庡涓摼鎺ョ綉缁滄帴鍙?
+    nlist_node_t node;                       // 链接结点，用于多个链接网络接口
     
-    fixq_t in_q;                            // 鏁版嵁鍖呰緭鍏ラ槦鍒?
+    fixq_t in_q;                            // 数据包输入队列
     void * in_q_buf[NETIF_INQ_SIZE];
-    fixq_t out_q;                           // 鏁版嵁鍖呭彂閫侀槦鍒?
+    fixq_t out_q;                           // 数据包发送队列
     void * out_q_buf[NETIF_OUTQ_SIZE];
 
-    // 鍙互鍦ㄨ繖閲屽姞鍏ヤ竴浜涚粺璁℃€х殑鍙橀噺
+    // 可以在这里加入一些统计性的变量
 }netif_t;
 
 net_err_t netif_init(void);
@@ -78,7 +78,7 @@ net_err_t netif_set_deactive(netif_t* netif);
 void netif_set_default (netif_t * netif);
 net_err_t netif_close(netif_t* netif);
 
-// 鏁版嵁鍖呰緭鍏ヨ緭鍑虹鐞?
+// 数据包输入输出管理
 net_err_t netif_put_in(netif_t* netif, pktbuf_t* buf, int tmo);
 net_err_t netif_put_out(netif_t * netif, pktbuf_t * buf, int tmo);
 pktbuf_t* netif_get_in(netif_t* netif, int tmo);

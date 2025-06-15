@@ -8,13 +8,14 @@
 #include "mblock.h"
 #include "pktbuf.h"
 
-static netif_t netif_buffer[NETIF_DEV_CNT];     // 缃戠粶鎺ュ彛鐨勬暟閲?
-static mblock_t netif_mblock;                   // 鎺ュ彛鍒嗛厤缁撴瀯
-static nlist_t netif_list;               // 缃戠粶鎺ュ彛鍒楄〃
-static netif_t * netif_default;          // 缂虹渷鐨勭綉缁滃垪琛?
+static netif_t netif_buffer[NETIF_DEV_CNT];     // 网络接口的数量
+static mblock_t netif_mblock;                   // 接口分配结构
+static nlist_t netif_list;               // 网络接口列表
+static netif_t * netif_default;          // 缺省的网络列表
+
 
 /**
- * @brief 鏄剧ず绯荤粺涓殑缃戝崱鍒楄〃淇℃伅
+ * @brief 显示系统中的网卡列表信息
  */
 #if DBG_DISP_ENABLED(DBG_NETIF)
 void display_netif_list (void) {
@@ -54,7 +55,7 @@ void display_netif_list (void) {
         dump_ip_buf(" netmask:", netif->netmask.a_addr);
         dump_ip_buf(" gateway:", netif->gateway.a_addr);
 
-        // 闃熷垪涓寘鏁伴噺鐨勬樉绀?
+        // 队列中包数量的显示
         plat_printf("\n");
     }
 }
@@ -63,16 +64,16 @@ void display_netif_list (void) {
 #endif // DBG_NETIF
 
 /**
- * @brief 缃戠粶鎺ュ彛灞傚垵濮嬪寲
+ * @brief 网络接口层初始化
  */
 net_err_t netif_init(void) {
     dbg_info(DBG_NETIF, "init netif");
 
-    // 寤虹珛鎺ュ彛鍒楄〃
+    // 建立接口列表
     nlist_init(&netif_list);
     mblock_init(&netif_mblock, netif_buffer, sizeof(netif_t), NETIF_DEV_CNT, NLOCKER_NONE);
 
-    // 璁剧疆缂虹渷鎺ュ彛
+    // 设置缺省接口
     netif_default = (netif_t *)0;
     
     dbg_info(DBG_NETIF, "init done.\n");
@@ -80,37 +81,37 @@ net_err_t netif_init(void) {
 }
 
 /**
- * @brief 鎵撳紑鎸囧畾鐨勭綉缁滄帴鍙?
+ * @brief 打开指定的网络接口
  */
 netif_t* netif_open(const char* dev_name, const netif_ops_t* ops, void * ops_data) {
-    // 鍒嗛厤涓€涓綉缁滄帴鍙?
+    // 分配一个网络接口
     netif_t*  netif = (netif_t *)mblock_alloc(&netif_mblock, -1);
     if (!netif) {
         dbg_error(DBG_NETIF, "no netif");
         return (netif_t*)0;
     }
 
-    // 璁剧疆鍚勭缂虹渷鍊? 杩欎簺鍊兼湁浜涘皢琚┍鍔ㄥ鐞嗭紝鏈変簺灏嗚涓婂眰netif_xxx鍏跺畠鍑芥暟璁剧疆
+    // 设置各种缺省值, 这些值有些将被驱动处理，有些将被上层netif_xxx其它函数设置
     ipaddr_set_any(&netif->ipaddr);
     ipaddr_set_any(&netif->netmask);
     ipaddr_set_any(&netif->gateway);
-    netif->mtu = 0;                      // 榛樿涓?锛屽嵆涓嶉檺鍒?
+    netif->mtu = 0;                      // 默认为0，即不限制
     netif->type = NETIF_TYPE_NONE;
     nlist_node_init(&netif->node);
 
     plat_strncpy(netif->name, dev_name, NETIF_NAME_SIZE);
     netif->name[NETIF_NAME_SIZE - 1] = '\0';
-    netif->ops = ops;                   // 璁剧疆椹卞姩鍜岀鏈夊弬鏁?
+    netif->ops = ops;                   // 设置驱动和私有参数
     netif->ops_data = (void *)ops_data;
 
-    // 鍒濆鍖栨帴鏀堕槦鍒?
+    // 初始化接收队列
     net_err_t err = fixq_init(&netif->in_q, netif->in_q_buf, NETIF_INQ_SIZE, NLOCKER_THREAD);
     if (err < 0) {
         dbg_error(DBG_NETIF, "netif in_q init error, err: %d", err);
         return (netif_t *)0;
     }
 
-    // 鍒濆鍖栧彂閫侀槦鍒?
+    // 初始化发送队列
     err = fixq_init(&netif->out_q, netif->out_q_buf, NETIF_OUTQ_SIZE, NLOCKER_THREAD);
     if (err < 0) {
         dbg_error(DBG_NETIF, "netif out_q init error, err: %d", err);
@@ -118,23 +119,23 @@ netif_t* netif_open(const char* dev_name, const netif_ops_t* ops, void * ops_dat
         return (netif_t *)0;
     }
 
-    // 鎵撳紑璁惧锛屽纭欢鍋氳繘涓€姝ョ殑璁剧疆, 鍦ㄥ叾鍐呴儴鍙netif瀛楁杩涜璁惧
-    // 鐗瑰埆鏄瀵箃ype鍜宭ink_layer鍋氳澶?
+    // 打开设备，对硬件做进一步的设置, 在其内部可对netif字段进行设备
+    // 特别是要对type和link_layer做设备
     err = ops->open(netif, ops_data);
     if (err < 0) {
         dbg_error(DBG_NETIF, "netif ops open error: %d");
         goto free_return;
     }
-    netif->state = NETIF_OPENED;        // 鍒囨崲涓簅pened
+    netif->state = NETIF_OPENED;        // 切换为opened
 
-    // 椹卞姩鍒濆鍖栧畬鎴愬悗锛屽netif杩涜杩涗竴姝ユ鏌?
-    // 鍋氫竴浜涘繀瑕佹€х殑妫€鏌ワ紝浠ュ厤椹卞姩娌″啓濂?
+    // 驱动初始化完成后，对netif进行进一步检查
+    // 做一些必要性的检查，以免驱动没写好
     if (netif->type == NETIF_TYPE_NONE) {
         dbg_error(DBG_NETIF, "netif type unknown");
         goto free_return;
     }
 
-    // 鎻掑叆闃熷垪涓?
+    // 插入队列中
     nlist_insert_last(&netif_list, &netif->node);
     display_netif_list();
     return netif;
@@ -151,8 +152,8 @@ free_return:
 }
 
 /**
- * @brief 璁剧疆IP鍦板潃銆佹帺鐮併€佺綉鍏崇瓑
- * 杩欓噷鍙槸绠€鍗曠殑璁剧疆鎺ュ彛鐨勫悇涓湴鍧€锛岃繘琛屽啓鍏?
+ * @brief 设置IP地址、掩码、网关等
+ * 这里只是简单的设置接口的各个地址，进行写入
  */
 net_err_t netif_set_addr(netif_t* netif, ipaddr_t* ip, ipaddr_t* netmask, ipaddr_t* gateway) {
     ipaddr_copy(&netif->ipaddr, ip ? ip : ipaddr_get_any());
@@ -162,7 +163,7 @@ net_err_t netif_set_addr(netif_t* netif, ipaddr_t* ip, ipaddr_t* netmask, ipaddr
 }
 
 /**
- * @brief 璁剧疆纭欢鍦板潃
+ * @brief 设置硬件地址
  */
 net_err_t netif_set_hwaddr(netif_t* netif, const uint8_t* hwaddr, int len) {
     plat_memcpy(netif->hwaddr.addr, hwaddr, len);
@@ -171,38 +172,38 @@ net_err_t netif_set_hwaddr(netif_t* netif, const uint8_t* hwaddr, int len) {
 }
 
 /**
- * @brief 婵€娲荤綉缁滆澶?
+ * @brief 激活网络设备
  */
 net_err_t netif_set_active(netif_t* netif) {
-    // 蹇呴』涓烘墦寮€鐘舵€佸湴鑳芥縺娲?
+    // 必须为打开状态地能激活
     if (netif->state != NETIF_OPENED) {
         dbg_error(DBG_NETIF, "netif is not opened");
         return NET_ERR_STATE;
     }
 
-    // 鐪嬬湅鏄惁瑕佹坊鍔犵己鐪佹帴鍙?
-    // 缂虹渷缃戠粶鎺ュ彛鐢ㄤ簬澶栫綉鏁版嵁鏀跺彂鏃剁殑鍖呭鐞?
+    // 看看是否要添加缺省接口
+    // 缺省网络接口用于外网数据收发时的包处理
     if (!netif_default && (netif->type != NETIF_TYPE_LOOP)) {
         netif_set_default(netif);
     }
 
-    // 鍒囨崲涓哄氨缁姸鎬?
+    // 切换为就绪状态
     netif->state = NETIF_ACTIVE;
     display_netif_list();
     return NET_ERR_OK;
 }
 
 /**
- * @brief 鍙栨秷璁惧鐨勬縺娲绘€?
+ * @brief 取消设备的激活态
  */
 net_err_t netif_set_deactive(netif_t* netif) {
-    // 蹇呴』宸茬粡婵€娲荤殑鐘舵€?
+    // 必须已经激活的状态
     if (netif->state != NETIF_ACTIVE) {
         dbg_error(DBG_NETIF, "netif is not actived");
         return NET_ERR_STATE;
     }
 
-    // 閲婃斁鎺夐槦鍒椾腑鐨勬墍鏈夋暟鎹寘
+    // 释放掉队列中的所有数据包
     pktbuf_t* buf;
     while ((buf = fixq_recv(&netif->in_q, -1))) {
         pktbuf_free(buf);
@@ -211,32 +212,32 @@ net_err_t netif_set_deactive(netif_t* netif) {
         pktbuf_free(buf);
     }
 
-    // 閲嶈缂虹渷缃戝彛
+    // 重设缺省网口
     if (netif_default == netif) {
         netif_default = (netif_t*)0;
     }
 
-    // 鍒囨崲鍥炴墦寮€锛堥潪婵€娲荤姸鎬侊級
+    // 切换回打开（非激活状态）
     netif->state = NETIF_OPENED;
     display_netif_list();
     return NET_ERR_OK;
 }
 
 /**
- * @brief 鍏抽棴缃戠粶鎺ュ彛
+ * @brief 关闭网络接口
  */
 net_err_t netif_close(netif_t* netif) {
-    // 闇€瑕佸厛鍙栨秷active鐘舵€佹墠鑳藉叧闂?
+    // 需要先取消active状态才能关闭
     if (netif->state == NETIF_ACTIVE) {
         dbg_error(DBG_NETIF, "netif(%s) is active, close failed.", netif->name);
         return NET_ERR_STATE;
     }
 
-    // 鍏堝叧闂澶?
+    // 先关闭设备
     netif->ops->close(netif);
     netif->state = NETIF_CLOSED;
 
-    // 鏈€鍚庨噴鏀緉etif缁撴瀯
+    // 最后释放netif结构
     nlist_remove(&netif_list, &netif->node);
     mblock_free(&netif_mblock, netif);
     display_netif_list();
@@ -244,54 +245,54 @@ net_err_t netif_close(netif_t* netif) {
 }
 
 /**
- * @brief 璁剧疆缂虹渷鐨勭綉缁滄帴鍙?
- * @param netif 缂虹渷鐨勭綉缁滄帴鍙?
+ * @brief 设置缺省的网络接口
+ * @param netif 缺省的网络接口
  */
 void netif_set_default(netif_t* netif) {
-    // 绾綍鏂扮殑缃戝崱
+    // 纪录新的网卡
     netif_default = netif;
 }
 
 /**
- * @brief 灏哹uf鍔犲叆鍒扮綉缁滄帴鍙ｇ殑杈撳叆闃熷垪涓?
+ * @brief 将buf加入到网络接口的输入队列中
  */
 net_err_t netif_put_in(netif_t* netif, pktbuf_t* buf, int tmo) {
-    // 鍐欏叆鎺ユ敹闃熷垪
+    // 写入接收队列
     net_err_t err = fixq_send(&netif->in_q, buf, tmo);
     if (err < 0) {
         dbg_warning(DBG_NETIF, "netif %s in_q full", netif->name);
         return NET_ERR_FULL;
     }
 
-    // 閫氱煡娑堟伅澶勭悊绾跨▼锛岃繖閲屼笉澶勭悊娑堟伅鏄惁鍙戦€佹垚鍔熺瓑闂
-    // 娑堟伅婊′簡涓嶈绱э紝璇存槑缃戝崱姝ｅ湪蹇欙紝鍚庣画杩樹細澶勭悊鐨?
+    // 通知消息处理线程，这里不处理消息是否发送成功等问题
+    // 消息满了不要紧，说明网卡正在忙，后续还会处理的
     exmsg_netif_in(netif);
     return NET_ERR_OK;
 }
 
 /**
- * @brief 灏咮uf娣诲姞鍒扮綉缁滄帴鍙ｇ殑杈撳嚭闃熷垪涓?
+ * @brief 将Buf添加到网络接口的输出队列中
  */
 net_err_t netif_put_out(netif_t* netif, pktbuf_t* buf, int tmo) {
-    // 鍐欏叆鍙戦€侀槦鍒?
+    // 写入发送队列
     net_err_t err = fixq_send(&netif->out_q, buf, tmo);
     if (err < 0) {
         dbg_info(DBG_NETIF, "netif %s out_q full", netif->name);
         return err;
     }
 
-    // 鍙槸鍐欏叆闃熷垪锛屽叿浣撶殑鍙戦€佷細璋冪敤ops->xmit鏉ュ惎鍔ㄥ彂閫?
+    // 只是写入队列，具体的发送会调用ops->xmit来启动发送
     return NET_ERR_OK;
 }
 
 /**
- * @brief 浠庤緭鍏ラ槦鍒椾腑鍙栧嚭涓€涓暟鎹寘
+ * @brief 从输入队列中取出一个数据包
  */
 pktbuf_t* netif_get_in(netif_t* netif, int tmo) {
-    // 浠庢帴鏀堕槦鍒椾腑鍙栨暟鎹寘
+    // 从接收队列中取数据包
     pktbuf_t* buf = fixq_recv(&netif->in_q, tmo);
     if (buf) {
-        // 閲嶆柊瀹氫綅锛屾柟渚胯繘琛岃鍐?
+        // 重新定位，方便进行读写
         pktbuf_reset_acc(buf);
         return buf;
     }
@@ -301,14 +302,14 @@ pktbuf_t* netif_get_in(netif_t* netif, int tmo) {
 }
 
 /**
- * 浠庤緭鍑洪槦鍒椾腑鍙栧嚭涓€涓暟鎹寘
+ * 从输出队列中取出一个数据包
  */
  pktbuf_t* netif_get_out(netif_t* netif, int tmo) {
-    // 浠庡彂閫侀槦鍒椾腑鍙栨暟鎹寘锛屼笉闇€瑕佺瓑寰呫€傚彲鑳戒細琚腑鏂鐞嗙▼搴忎腑璋冪敤
-    // 鍥犳锛屼笉鑳藉洜涓烘病鏈夊寘鑰屾寕璧风▼搴?
+    // 从发送队列中取数据包，不需要等待。可能会被中断处理程序中调用
+    // 因此，不能因为没有包而挂起程序
     pktbuf_t* buf = fixq_recv(&netif->out_q, tmo);
     if (buf) {
-        // 閲嶆柊瀹氫綅锛屾柟渚胯繘琛岃鍐?
+        // 重新定位，方便进行读写
         pktbuf_reset_acc(buf);
         return buf;
     }
@@ -318,19 +319,19 @@ pktbuf_t* netif_get_in(netif_t* netif, int tmo) {
 }
 
 /**
- * @brief 鍙戦€佷竴涓綉缁滃寘鍒扮綉缁滄帴鍙ｄ笂, 鐩爣鍦板潃涓篿paddr
- * 鍦ㄥ彂閫佸墠锛屽厛鍒ゆ柇椹卞姩鏄惁姝ｅ湪鍙戦€侊紝濡傛灉鏄垯灏嗗叾鎻掑叆鍒板彂閫侀槦鍒楋紝绛夐┍鍔ㄦ湁绌哄悗锛岀敱椹卞姩鑷鍙栧嚭鍙戦€併€?
- * 鍚﹀垯锛屽姞鍏ュ彂閫侀槦鍒楀悗锛屽惎鍔ㄩ┍鍔ㄥ彂閫?
+ * @brief 发送一个网络包到网络接口上, 目标地址为ipaddr
+ * 在发送前，先判断驱动是否正在发送，如果是则将其插入到发送队列，等驱动有空后，由驱动自行取出发送。
+ * 否则，加入发送队列后，启动驱动发送
  */
 net_err_t netif_out(netif_t* netif, ipaddr_t * ipaddr, pktbuf_t* buf) {
-    // 缂虹渷鎯呭喌锛屽皢鏁版嵁鍖呮彃鍏ュ氨缁槦鍒楋紝鐒跺悗閫氱煡椹卞姩绋嬪簭寮€濮嬪彂閫?
-    // 纭欢褰撳墠鍙戦€佸鏋滄湭杩涜锛屽垯鍚姩鍙戦€侊紝鍚﹀垯涓嶅鐞嗭紝绛夊緟纭欢涓柇鑷姩瑙﹀彂杩涜鍙戦€?
+    // 缺省情况，将数据包插入就绪队列，然后通知驱动程序开始发送
+    // 硬件当前发送如果未进行，则启动发送，否则不处理，等待硬件中断自动触发进行发送
     net_err_t err = netif_put_out(netif, buf, -1);
     if (err < 0) {
         dbg_info(DBG_NETIF, "send to netif queue failed. err: %d", err);
         return err;
     }
 
-    // 鍚姩鍙戦€?
+    // 启动发送
     return netif->ops->xmit(netif);
 }

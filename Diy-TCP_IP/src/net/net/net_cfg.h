@@ -1,26 +1,26 @@
 ﻿#ifndef NET_CFG_H
 #define NET_CFG_H
 
-// 璋冭瘯淇℃伅杈撳嚭
-#define DBG_MBLOCK		    DBG_LEVEL_INFO			// 鍐呭瓨鍧楃鐞嗗櫒
-#define DBG_QUEUE           DBG_LEVEL_INFO          // 瀹氶暱瀛樺偍鍧?
-#define DBG_MSG             DBG_LEVEL_INFO          // 娑堟伅閫氫俊
-#define DBG_BUF             DBG_LEVEL_INFO          // 鏁版嵁鍖呯鐞嗗櫒
-#define DBG_PLAT            DBG_LEVEL_INFO          // 绯荤粺骞冲彴
-#define DBG_INIT            DBG_LEVEL_INFO          // 绯荤粺鍒濆鍖?
-#define DBG_NETIF           DBG_LEVEL_INFO          // 缃戠粶鎺ュ彛灞?
+// 调试信息输出
+#define DBG_MBLOCK		    DBG_LEVEL_INFO			// 内存块管理器
+#define DBG_QUEUE           DBG_LEVEL_INFO          // 定长存储块
+#define DBG_MSG             DBG_LEVEL_INFO          // 消息通信
+#define DBG_BUF             DBG_LEVEL_INFO          // 数据包管理器
+#define DBG_PLAT            DBG_LEVEL_INFO          // 系统平台
+#define DBG_INIT            DBG_LEVEL_INFO          // 系统初始化
+#define DBG_NETIF           DBG_LEVEL_INFO          // 网络接口层
 
-#define EXMSG_MSG_CNT          10                 // 娑堟伅缂撳啿鍖哄ぇ灏?
-#define EXMSG_BLOCKER        NLOCKER_THREAD      // 鏍稿績绾跨▼鐨勯攣绫诲瀷
+#define EXMSG_MSG_CNT          10                 // 消息缓冲区大小
+#define EXMSG_BLOCKER        NLOCKER_THREAD      // 核心线程的锁类型
 
-#define PKTBUF_BLK_SIZE         128                 // 鏁版嵁鍖呭潡澶у皬
-#define PKTBUF_BLK_CNT          100                 // 鏁版嵁鍖呭潡鐨勬暟閲?
-#define PKTBUF_BUF_CNT          100                 // 鏁版嵁鍖呯殑鏁伴噺
+#define PKTBUF_BLK_SIZE         128                 // 数据包块大小
+#define PKTBUF_BLK_CNT          100                 // 数据包块的数量
+#define PKTBUF_BUF_CNT          100                 // 数据包的数量
 
-#define NETIF_HWADDR_SIZE           10                  // 纭欢鍦板潃闀垮害锛宮ac鍦板潃鏈€灏?涓瓧鑺?
-#define NETIF_NAME_SIZE             10                  // 缃戠粶鎺ュ彛鍚嶇О澶у皬
-#define NETIF_DEV_CNT               4                   // 缃戠粶鎺ュ彛鐨勬暟閲?
-#define NETIF_INQ_SIZE             50                  // 缃戝崱杈撳叆闃熷垪鏈€澶у閲?
-#define NETIF_OUTQ_SIZE            50                  // 缃戝崱杈撳嚭闃熷垪鏈€澶у閲?
+#define NETIF_HWADDR_SIZE           10                  // 硬件地址长度，mac地址最少6个字节
+#define NETIF_NAME_SIZE             10                  // 网络接口名称大小
+#define NETIF_DEV_CNT               4                   // 网络接口的数量
+#define NETIF_INQ_SIZE             50                  // 网卡输入队列最大容量
+#define NETIF_OUTQ_SIZE            50                  // 网卡输出队列最大容量
 
 #endif

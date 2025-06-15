@@ -8,7 +8,7 @@
  * 在pcap打开时传递进去的参数
  */
 typedef struct _pcap_data_t {
-    const char* ip;                       // 使用的网卡
+    const char* ip;                    // 使用的网卡
     const uint8_t* hwaddr;             // 网卡的mac地址
 }pcap_data_t;
 

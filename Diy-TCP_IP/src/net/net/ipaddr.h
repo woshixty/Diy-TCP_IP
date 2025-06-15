@@ -4,20 +4,20 @@
 #include <stdint.h>
 #include "net_err.h"
 
-#define IPV4_ADDR_SIZE             4            // IPv4鍦板潃闀垮害
+#define IPV4_ADDR_SIZE             4            // IPv4地址长度
 
 /**
- * @brief IP鍦板潃
+ * @brief IP地址
  */
 typedef struct _ipaddr_t {
     enum {
         IPADDR_V4,
-    }type;              // 鍦板潃绫诲瀷
+    }type;              // 地址类型
 
     union {
-        // 娉ㄦ剰锛孖P鍦板潃鎬绘槸鎸夊ぇ绔瓨鏀?
-        uint32_t q_addr;                        // 32浣嶆暣浣撴弿杩?
-        uint8_t a_addr[IPV4_ADDR_SIZE];        // 鏁扮粍鎻忚堪
+        // 注意，IP地址总是按大端存放
+        uint32_t q_addr;                        // 32位整体描述
+        uint8_t a_addr[IPV4_ADDR_SIZE];        // 数组描述
     };
 }ipaddr_t;
 

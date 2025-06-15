@@ -1,7 +1,7 @@
 ﻿#include "nlocker.h"
 
 /**
- * 鍒濆鍖栬祫婧愰攣
+ * 初始化资源锁
  */
 net_err_t nlocker_init(nlocker_t * locker, nlocker_type_t type) {
     if (type == NLOCKER_THREAD) {
@@ -17,7 +17,7 @@ net_err_t nlocker_init(nlocker_t * locker, nlocker_type_t type) {
 }
 
 /**
- * @brief 閿€姣侀攣
+ * @brief 销毁锁
  */
 void nlocker_destroy(nlocker_t * locker) {
     if (locker->type == NLOCKER_THREAD) {
@@ -26,7 +26,7 @@ void nlocker_destroy(nlocker_t * locker) {
 }
 
 /**
- * @brief 涓婇攣
+ * @brief 上锁
  */
 void nlocker_lock(nlocker_t * locker) {
     if (locker->type == NLOCKER_THREAD) {
@@ -35,7 +35,7 @@ void nlocker_lock(nlocker_t * locker) {
 }
 
 /**
- * @brief 瑙ｉ攣
+ * @brief 解锁
  */
 void nlocker_unlock(nlocker_t * locker) {
     if (locker->type == NLOCKER_THREAD) {

@@ -1,10 +1,10 @@
-ï»¿#include "fixq.h"
+#include "fixq.h"
 #include "nlocker.h"
 #include "dbg.h"
 #include "sys.h"
 
 /**
- * @brief é’æ¿†îé–æ §ç•¾é—€æŒç§·é­îˆæ§¦é’?
+ * @brief ³õÊ¼»¯¶¨³¤ÏûÏ¢¶ÓÁĞ
  */
 net_err_t fixq_init(fixq_t *q, void **buf, int size, nlocker_type_t type) {
     q->size = size;
@@ -13,14 +13,14 @@ net_err_t fixq_init(fixq_t *q, void **buf, int size, nlocker_type_t type) {
     q->recv_sem = SYS_SEM_INVALID;
     q->send_sem = SYS_SEM_INVALID;
 
-    // é’æ¶˜ç¼“é–¿?
+    // ´´½¨Ëø
     net_err_t err = nlocker_init(&q->locker, type);
     if (err < 0) {
         dbg_error(DBG_QUEUE, "init locker failed!");
         return err;
     }
 
-    // é’æ¶˜ç¼“é™æˆ¦â‚¬ä½·ä¿Šé™çƒ½å™º
+    // ´´½¨·¢ËÍĞÅºÅÁ¿
     q->send_sem = sys_sem_create(size);
     if (q->send_sem == SYS_SEM_INVALID)  {
         dbg_error(DBG_QUEUE, "create sem failed!");
@@ -51,24 +51,24 @@ init_failed:
 }
 
 /**
- * @brief éšæˆç§·é­îˆæ§¦é’æ¥€å•“éãƒ¤ç«´æ¶“î…ç§·é­?
- * æ¿¡å‚›ç‰å¨‘å Ÿä¼…é—ƒç†·åªå©Šâ˜…ç´é’æ¬‘æ¹…æ¶“åª¡moé”›å±½î›§é‹æ¸¢mo < 0é’æ¬ç¬‰ç»›å¤Šç·Ÿ
+ * @brief ÏòÏûÏ¢¶ÓÁĞĞ´ÈëÒ»¸öÏûÏ¢
+ * Èç¹ûÏûÏ¢¶ÓÁĞÂú£¬Ôò¿´ÏÂtmo£¬Èç¹ûtmo < 0Ôò²»µÈ´ı
  */
 net_err_t fixq_send(fixq_t *q, void *msg, int tmo) {
     nlocker_lock(&q->locker);
     if ((q->cnt >= q->size) && (tmo < 0)) {
-        // æ¿¡å‚›ç‰ç¼‚æ’³ç“¨å®¸å‰å¼§é”›å±½è‹Ÿæ¶“æ–¾ç¬‰é—‡â‚¬ç‘•ä½ºç“‘å¯°å’ƒç´é’æ¬‘ç›é—æŠ½â‚¬â‚¬é‘?
+        // Èç¹û»º´æÒÑÂú£¬²¢ÇÒ²»ĞèÒªµÈ´ı£¬ÔòÁ¢¼´ÍË³ö
         nlocker_unlock(&q->locker);
         return NET_ERR_FULL;
     }
     nlocker_unlock(&q->locker);
 
-    // å¨‘å £â‚¬æ¥å¸€æ¶“â‚¬æ¶“î†â”–é—‚èŒ¶ç¥«å©§æ„¶ç´æ¿¡å‚›ç‰æ¶“è™¹â”–é’æ¬ç´°ç»›å¤Šç·Ÿ
+    // ÏûºÄµôÒ»¸ö¿ÕÏĞ×ÊÔ´£¬Èç¹ûÎª¿ÕÔò»áµÈ´ı
     if (sys_sem_wait(q->send_sem, tmo) < 0) {
         return NET_ERR_TMO;
     }
 
-    // éˆå¤Œâ”–é—‚æ’å´Ÿéå†¨å•“éãƒ§ç´¦ç€›?
+    // ÓĞ¿ÕÏĞµ¥ÔªĞ´Èë»º´æ
     nlocker_lock(&q->locker);
     q->buf[q->in++] = msg;
     if (q->in >= q->size) {
@@ -77,16 +77,16 @@ net_err_t fixq_send(fixq_t *q, void *msg, int tmo) {
     q->cnt++;
     nlocker_unlock(&q->locker);
 
-    // é–«æ°±ç…¡éè·ºç• æ©æ¶šâ–¼éˆå¤‹ç§·é­îˆšå½²é¢?
+    // Í¨ÖªÆäËü½ø³ÌÓĞÏûÏ¢¿ÉÓÃ
     sys_sem_notify(q->recv_sem);
     return NET_ERR_OK;
 }
 
 /**
- * @brief æµ åº¢æšŸé¹î†¼å¯˜é—ƒç†·åªæ¶“î…å½‡æ¶“â‚¬æ¶“î…ç§·é­îˆ¤ç´æ¿¡å‚›ç‰éƒç‹…ç´é’æ¬‘ç“‘å¯°?
+ * @brief ´ÓÊı¾İ°ü¶ÓÁĞÖĞÈ¡Ò»¸öÏûÏ¢£¬Èç¹ûÎŞ£¬ÔòµÈ´ı
  */
 void *fixq_recv(fixq_t *q, int tmo) {
-    // æ¿¡å‚›ç‰ç¼‚æ’³ç“¨æ¶“è™¹â”–æ¶“æ–¾ç¬‰é—‡â‚¬ç‘•ä½ºç“‘é”›å±½å¯ç»”å¬ªåµ†é–«â‚¬é‘?
+    // Èç¹û»º´æÎª¿ÕÇÒ²»ĞèÒªµÈ£¬ÔòÁ¢¼´ÍË³ö
     nlocker_lock(&q->locker);
     if (!q->cnt && (tmo < 0)) {
         nlocker_unlock(&q->locker);
@@ -94,12 +94,12 @@ void *fixq_recv(fixq_t *q, int tmo) {
     }
     nlocker_unlock(&q->locker);
 
-    // é¦ã„¤ä¿Šé™çƒ½å™ºæ¶“å©„ç“‘å¯°å‘®æšŸé¹î†¼å¯˜é™îˆœæ•¤
+    // ÔÚĞÅºÅÁ¿ÉÏµÈ´ıÊı¾İ°ü¿ÉÓÃ
     if (sys_sem_wait(q->recv_sem, tmo) < 0) {
         return (void *)0;
     }
 
-    // é™æ ¨ç§·é­?
+    // È¡ÏûÏ¢
     nlocker_lock(&q->locker);
     void *msg = q->buf[q->out++];
     if (q->out >= q->size) {
@@ -108,14 +108,14 @@ void *fixq_recv(fixq_t *q, int tmo) {
     q->cnt--;
     nlocker_unlock(&q->locker);
 
-    // é–«æ°±ç…¡éˆå¤Œâ”–é—‚èŒ¬â”–é—‚æ‘å½²é¢?
+    // Í¨ÖªÓĞ¿ÕÏĞ¿Õ¼ä¿ÉÓÃ
     sys_sem_notify(q->send_sem);
     return msg;
 }
 
 /**
- * é–¿â‚¬å§£ä¾€æ§¦é’?
- * @param list å¯°å‘´æ”¢å§£ä½ºæ®‘é—ƒç†·åª
+ * Ïú»Ù¶ÓÁĞ
+ * @param list ´ıÏú»ÙµÄ¶ÓÁĞ
  */
 void fixq_destroy(fixq_t *q) {
     nlocker_destroy(&q->locker);
@@ -124,7 +124,7 @@ void fixq_destroy(fixq_t *q) {
 }
 
 /**
- * @brief é™æ «ç´¦éè¹­è…‘å¨‘å Ÿä¼…é¨å‹¬æšŸé–²?
+ * @brief È¡»º³åÖĞÏûÏ¢µÄÊıÁ¿
  */
 int fixq_count (fixq_t *q) {
     nlocker_lock(&q->locker);

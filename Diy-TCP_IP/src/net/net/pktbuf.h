@@ -22,8 +22,8 @@ typedef struct _pktblk_t {
  */
 typedef struct _pktbuf_t {
     int total_size;                         // 包的总大小
-    nlist_t blk_list;                        // 包块链表
-    nlist_node_t node;                       // 用于连接下一个兄弟包
+    nlist_t blk_list;                       // 包块链表
+    nlist_node_t node;                      // 用于连接下一个兄弟包
 
     // 读写相关
     int ref;                                // 引用计数

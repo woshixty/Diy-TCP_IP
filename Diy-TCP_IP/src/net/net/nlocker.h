@@ -4,20 +4,20 @@
 #include "sys.h"
 
 /**
- * @brief 閿佺殑绫诲瀷
+ * @brief 锁的类型
  * 
  */
 typedef enum _nlocker_type_t {
-    NLOCKER_NONE,                   // 涓嶉渶瑕侀攣
-    NLOCKER_THREAD,                 // 鐢ㄤ簬绾跨▼鍏变韩鐨勯攣
+    NLOCKER_NONE,                   // 不需要锁
+    NLOCKER_THREAD,                 // 用于线程共享的锁
 }nlocker_type_t;
 
 typedef struct _nlocker_t {
-    nlocker_type_t type;                // 閿佺殑绫诲瀷
+    nlocker_type_t type;                // 锁的类型
 
-    // 鏍规嵁涓嶅悓鐨勯攣绫诲瀷锛屾斁缃笉鍚岀殑缁撴瀯
+    // 根据不同的锁类型，放置不同的结构
     union {
-        sys_mutex_t mutex;           // 鐢ㄤ簬绾跨▼涔嬮棿璁块棶鐨勪簰鏂ラ攣
+        sys_mutex_t mutex;           // 用于线程之间访问的互斥锁
     };
 }nlocker_t;
 

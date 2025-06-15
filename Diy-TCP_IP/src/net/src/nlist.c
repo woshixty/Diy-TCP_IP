@@ -1,8 +1,8 @@
 ﻿#include "nlist.h"
 
 /**
- * 鍒濆鍖栭摼琛?
- * @param list 寰呭垵濮嬪寲鐨勯摼琛?
+ * 初始化链表
+ * @param list 待初始化的链表
  */
 void nlist_init(nlist_t *list) {
     list->first = list->last = (nlist_node_t *)0;
@@ -10,23 +10,23 @@ void nlist_init(nlist_t *list) {
 }
 
 /**
- * 灏嗘寚瀹氳〃椤规彃鍏ュ埌鎸囧畾閾捐〃鐨勫ご閮?
- * @param list 寰呮彃鍏ョ殑閾捐〃
- * @param node 寰呮彃鍏ョ殑缁撶偣
+ * 将指定表项插入到指定链表的头部
+ * @param list 待插入的链表
+ * @param node 待插入的结点
  */
 void nlist_insert_first(nlist_t *list, nlist_node_t *node) {
-    // 璁剧疆濂藉緟鎻掑叆缁撶偣鐨勫墠鍚庯紝鍓嶉潰涓虹┖
+    // 设置好待插入结点的前后，前面为空
     node->next = list->first;
     node->pre = (nlist_node_t *)0;
 
-    // 濡傛灉涓虹┖锛岄渶瑕佸悓鏃惰缃甪irst鍜宭ast鎸囧悜鑷繁
+    // 如果为空，需要同时设置first和last指向自己
     if (nlist_is_empty(list)) {
         list->last = list->first = node;
     } else {
-        // 鍚﹀垯锛岃缃ソ鍘熸湰绗竴涓粨鐐圭殑pre
+        // 否则，设置好原本第一个结点的pre
         list->first->pre = node;
 
-        // 璋冩暣first鎸囧悜
+        // 调整first指向
         list->first = node;
     }
 
@@ -34,54 +34,54 @@ void nlist_insert_first(nlist_t *list, nlist_node_t *node) {
 }
 
 /**
- * 绉婚櫎鎸囧畾閾捐〃鐨勪腑鐨勮〃椤?
- * 涓嶆鏌ode鏄惁鍦ㄧ粨鐐逛腑
+ * 移除指定链表的中的表项
+ * 不检查node是否在结点中
  */
 nlist_node_t * nlist_remove(nlist_t *list, nlist_node_t *remove_node) {
-    // 濡傛灉鏄ご锛屽ご寰€鍓嶇Щ
+    // 如果是头，头往前移
     if (remove_node == list->first) {
         list->first = remove_node->next;
     }
 
-    // 濡傛灉鏄熬锛屽垯灏惧線鍥炵Щ
+    // 如果是尾，则尾往回移
     if (remove_node == list->last) {
         list->last = remove_node->pre;
     }
 
-    // 濡傛灉鏈夊墠锛屽垯璋冩暣鍓嶇殑鍚庣户
+    // 如果有前，则调整前的后继
     if (remove_node->pre) {
         remove_node->pre->next = remove_node->next;
     }
 
-    // 濡傛灉鏈夊悗锛屽垯璋冩暣鍚庡線鍓嶇殑
+    // 如果有后，则调整后往前的
     if (remove_node->next) {
         remove_node->next->pre = remove_node->pre;
     }
 
-    // 娓呯┖node鎸囧悜
+    // 清空node指向
     remove_node->pre = remove_node->next = (nlist_node_t*)0;
     --list->count;
     return remove_node;
 }
 
 /**
- * 灏嗘寚瀹氳〃椤规彃鍏ュ埌鎸囧畾閾捐〃鐨勫熬閮?
- * @param list 鎿嶄綔鐨勯摼琛?
- * @param node 寰呮彃鍏ョ殑缁撶偣
+ * 将指定表项插入到指定链表的尾部
+ * @param list 操作的链表
+ * @param node 待插入的结点
  */
 void nlist_insert_last(nlist_t *list, nlist_node_t *node) {
-    // 璁剧疆濂界粨鐐规湰韬?
+    // 设置好结点本身
     node->pre = list->last;
     node->next = (nlist_node_t*)0;
 
-    // 琛ㄧ┖锛屽垯first/last閮芥寚鍚戝敮涓€鐨刵ode
+    // 表空，则first/last都指向唯一的node
     if (nlist_is_empty(list)) {
         list->first = list->last = node;
     } else {
-        // 鍚﹀垯锛岃皟鏁磍ast缁撶偣鐨勫悜涓€鎸囧悜涓簄ode
+        // 否则，调整last结点的向一指向为node
         list->last->next = node;
 
-        // node鍙樻垚浜嗘柊鐨勫悗缁х粨鐐?
+        // node变成了新的后继结点
         list->last = node;
     }
 
@@ -89,30 +89,30 @@ void nlist_insert_last(nlist_t *list, nlist_node_t *node) {
 }
 
 /**
- * 灏哊ode鎻掑叆鎸囧畾缁撶偣涔嬪悗
- * @param 鎿嶄綔鐨勯摼琛?
- * @param pre 鍓嶄竴缁撶偣
- * @param node 寰呮彃鍏ョ殑缁撶偣
+ * 将Node插入指定结点之后
+ * @param 操作的链表
+ * @param pre 前一结点
+ * @param node 待插入的结点
  */
 void nlist_insert_after(nlist_t* list, nlist_node_t* pre, nlist_node_t* node) {
-    // 鍘熼摼琛ㄤ负绌?
+    // 原链表为空
     if (nlist_is_empty(list)) {
         nlist_insert_first(list, node);
         return;
     }
 
-    // node鐨勪笅涓€缁撶偣锛屽簲褰撲负pre鐨勪笅涓€缁撶偣
+    // node的下一结点，应当为pre的下一结点
     node->next = pre->next;
     node->pre = pre;
 
-    // 鍏堣皟鏁村悗绮ワ紝鍐嶆洿鏂拌嚜宸?
+    // 先调整后粥，再更新自己
     if (pre->next) {
         pre->next->pre = node;
     }
     pre->next = node;
 
 
-    // 濡傛灉pre鎭板ソ浣嶄簬琛ㄥ熬锛屽垯鏂扮殑琛ㄥ熬灏遍渶瑕佹洿鏂版垚node
+    // 如果pre恰好位于表尾，则新的表尾就需要更新成node
     if (list->last == pre) {
         list->last = node;
     }

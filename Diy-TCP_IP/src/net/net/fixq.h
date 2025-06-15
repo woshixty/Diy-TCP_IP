@@ -6,15 +6,15 @@
 #include "net_plat.h"
 
 /**
- * 鍥哄畾闀垮害鐨勬秷鎭槦鍒?
+ * 固定长度的消息队列
  */
 typedef struct _fixq_t{
-    int size;                               // 娑堟伅瀹归噺
-    void** buf;                             // 娑堟伅缂撳瓨
-    int in, out, cnt;                       // 璇诲啓浣嶇疆绱㈠紩锛屾秷鎭暟
-    nlocker_t locker;                       // 璁块棶鐨勯攣
-    sys_sem_t recv_sem;                     // 鎺ユ敹娑堟伅鏃朵娇鐢ㄧ殑淇″彿閲?
-    sys_sem_t send_sem;                     // 鍙戦€佹秷鎭椂浣挎湁鐨勪俊鍙烽噺
+    int size;                               // 消息容量
+    void** buf;                             // 消息缓存
+    int in, out, cnt;                       // 读写位置索引，消息数
+    nlocker_t locker;                       // 访问的锁
+    sys_sem_t recv_sem;                     // 接收消息时使用的信号量
+    sys_sem_t send_sem;                     // 发送消息时使有的信号量
 }fixq_t;
 
 net_err_t fixq_init(fixq_t * q, void ** buf, int size, nlocker_type_t share_type);
