@@ -244,7 +244,7 @@ net_err_t netif_set_deactive(netif_t* netif) {
     }
 
     if(netif->link_layer) {
-        net_err_t err = netif->link_layer->close(netif);
+        netif->link_layer->close(netif);
     }
 
     // 释放掉队列中的所有数据包
