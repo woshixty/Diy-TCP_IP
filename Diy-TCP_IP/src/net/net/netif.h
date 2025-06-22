@@ -36,6 +36,18 @@ typedef enum _netif_type_t {
     NETIF_TYPE_SIZE,
 }netif_type_t;
 
+struct _netif_t;
+
+// 处理链路层输入输出操作
+typedef struct _link_layer_t {
+    netif_type_t type;
+
+    net_err_t (*open)(struct _netif_t* netif);          // 打开链路层
+    void (*close)(struct _netif_t* netif);              // 关闭链路层
+    net_err_t (*in)(struct _netif_t* netif, pktbuf_t* buf);                     // 链路层输入处理
+    net_err_t (*out)(struct _netif_t* netif, ipaddr_t* dest, pktbuf_t* buf);    // 链路层输出处理
+} link_layer_t;
+
 /**
  * @brief 网络接口层代码
  */
@@ -58,6 +70,8 @@ typedef struct _netif_t {
 
     const netif_ops_t* ops;                 // 驱动类型
     void* ops_data;                         // 底层私有数据
+
+    const link_layer_t* link_layer;
 
     nlist_node_t node;                       // 链接结点，用于多个链接网络接口
     
@@ -83,6 +97,8 @@ net_err_t netif_put_in(netif_t* netif, pktbuf_t* buf, int tmo);
 net_err_t netif_put_out(netif_t * netif, pktbuf_t * buf, int tmo);
 pktbuf_t* netif_get_in(netif_t* netif, int tmo);
 pktbuf_t* netif_get_out(netif_t * netif, int tmo);
+
 net_err_t netif_out(netif_t* netif, ipaddr_t* ipaddr, pktbuf_t* buf);
 
+net_err_t netif_register_layer(int type, const link_layer_t* layer);
 #endif

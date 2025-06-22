@@ -13,6 +13,7 @@ static mblock_t netif_mblock;                   // 接口分配结构
 static nlist_t netif_list;               // 网络接口列表
 static netif_t * netif_default;          // 缺省的网络列表
 
+static const link_layer_t* link_layers[NETIF_TYPE_SIZE];
 
 /**
  * @brief 显示系统中的网卡列表信息
@@ -76,8 +77,33 @@ net_err_t netif_init(void) {
     // 设置缺省接口
     netif_default = (netif_t *)0;
     
+    plat_memset((void*)link_layers, 0, sizeof(link_layers));
     dbg_info(DBG_NETIF, "init done.\n");
     return NET_ERR_OK;
+}
+
+net_err_t netif_register_layer(int type, const link_layer_t* layer) {
+    if(type < 0 || (type >= NETIF_TYPE_SIZE)) {
+        dbg_info(DBG_NETIF, "type error");
+        return NET_ERR_PARAM;
+    }
+
+    if(link_layers[type]) {
+        dbg_info(DBG_NETIF, "link layer exist");
+        return NET_ERR_EXIST;
+    }
+
+    link_layers[type] = layer;
+    return NET_ERR_OK;
+}
+
+static const link_layer_t* netif_get_layer(int type) {
+    if(type < 0 || (type >= NETIF_TYPE_SIZE)) {
+        dbg_info(DBG_NETIF, "type error");
+        return (link_layer_t*)0;
+    }
+
+    return link_layers[type];
 }
 
 /**
@@ -135,6 +161,12 @@ netif_t* netif_open(const char* dev_name, const netif_ops_t* ops, void * ops_dat
         goto free_return;
     }
 
+    netif->link_layer = netif_get_layer(netif->type);
+    if(!netif->link_layer && (netif->type != NETIF_TYPE_LOOP)) {
+        dbg_error(DBG_NETIF, "no link layer, netif name: %s\n", dev_name);
+        goto free_return;
+    }
+
     // 插入队列中
     nlist_insert_last(&netif_list, &netif->node);
     display_netif_list();
@@ -187,6 +219,14 @@ net_err_t netif_set_active(netif_t* netif) {
         netif_set_default(netif);
     }
 
+    if(netif->link_layer) {
+        net_err_t err = netif->link_layer->open(netif);
+        if(err < 0) {
+            dbg_info(DBG_NETIF, "active error");
+            return err;
+        }
+    }
+
     // 切换为就绪状态
     netif->state = NETIF_ACTIVE;
     display_netif_list();
@@ -201,6 +241,10 @@ net_err_t netif_set_deactive(netif_t* netif) {
     if (netif->state != NETIF_ACTIVE) {
         dbg_error(DBG_NETIF, "netif is not actived");
         return NET_ERR_STATE;
+    }
+
+    if(netif->link_layer) {
+        net_err_t err = netif->link_layer->close(netif);
     }
 
     // 释放掉队列中的所有数据包
