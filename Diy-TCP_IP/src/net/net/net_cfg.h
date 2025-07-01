@@ -9,6 +9,7 @@
 #define DBG_PLAT            DBG_LEVEL_INFO          // 系统平台
 #define DBG_INIT            DBG_LEVEL_INFO          // 系统初始化
 #define DBG_NETIF           DBG_LEVEL_INFO          // 网络接口层
+#define DBG_ETHER           DBG_LEVEL_INFO
 
 #define EXMSG_MSG_CNT          10                 // 消息缓冲区大小
 #define EXMSG_BLOCKER        NLOCKER_THREAD      // 核心线程的锁类型

@@ -5,6 +5,7 @@
 #include "dbg.h"
 #include "netif.h"
 #include "loop.h"
+#include "ether.h"
 
 /**
  * 协议栈初始化
@@ -20,6 +21,7 @@ net_err_t net_init(void) {
 
     // 环回接口初始化
     loop_init();
+    ether_init();
     return NET_ERR_OK;
 }
 
