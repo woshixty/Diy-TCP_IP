@@ -4,6 +4,7 @@
 #include "netif.h"
 #include "netif_pcap.h"
 #include "dbg.h"
+#include "ether.h"
 
 /**
  * 数据包接收线程，不断地收数据包
@@ -86,7 +87,7 @@ static net_err_t netif_pcap_open(struct _netif_t* netif, void* ops_data) {
     netif->ops_data = pcap;
 
     netif->type = NETIF_TYPE_ETHER;         // 以太网类型
-    netif->mtu = 1500;            // 1500字节
+    netif->mtu = ETHER_MTU;                 // 1500字节
     netif_set_hwaddr(netif, dev_data->hwaddr, NETIF_HWADDR_SIZE);
 
     sys_thread_create(xmit_thread, netif);
