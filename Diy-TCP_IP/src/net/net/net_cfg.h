@@ -10,6 +10,7 @@
 #define DBG_INIT            DBG_LEVEL_INFO          // 系统初始化
 #define DBG_NETIF           DBG_LEVEL_INFO          // 网络接口层
 #define DBG_ETHER           DBG_LEVEL_INFO
+#define DBG_TOOLS           DBG_LEVEL_INFO
 
 #define NET_ENDIAN_LITTLE       1
 

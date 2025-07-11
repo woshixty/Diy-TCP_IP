@@ -6,6 +6,7 @@
 #include "netif.h"
 #include "loop.h"
 #include "ether.h"
+#include "tools.h"
 
 /**
  * 协议栈初始化
@@ -15,6 +16,7 @@ net_err_t net_init(void) {
 
     // 各模块初始化
     net_plat_init();
+    tools_init();
     exmsg_init();
     pktbuf_init();
     netif_init();

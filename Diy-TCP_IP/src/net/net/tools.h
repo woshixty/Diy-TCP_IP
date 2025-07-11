@@ -3,6 +3,7 @@
 
 #include "stdint.h"
 #include "net_cfg.h"
+#include "net_err.h"
 
 static inline uint16_t swap_u16(uint16_t v) {
     uint16_t r = ((v & 0xFF) << 8) | ((v >> 8) & 0xFF);
@@ -17,6 +18,8 @@ static inline uint32_t swap_u32(uint32_t v) {
         | (((v >> 24) & 0xFF) << 0);
     return r;
 }
+
+net_err_t tools_init(void);
 
 #if NET_ENDIAN_LITTLE
 #define x_htons(v)      swap_u16(v)
