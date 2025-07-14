@@ -23,6 +23,8 @@ void dbg_print(int m_level, int s_level, const char* file, const char* func, int
 void dump_mac(const char* msg, const uint8_t* mac);
 void dump_ip_buf(const char* msg, const uint8_t* ip);
 
+void dbg_dump_hwaddr(const char* msg, const uint8_t* hwaddr, int len);
+
 /**
  * @brief 不同的调试输出宏
  * __FILE__ __FUNCTION__, __LINE__为C语言内置的宏

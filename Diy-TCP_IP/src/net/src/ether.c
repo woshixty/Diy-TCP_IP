@@ -3,6 +3,37 @@
 #include "netif.h"
 #include "dbg.h"
 #include "net_cfg.h"
+#include "sys_plat.h"
+#include "tools.h"
+#include "protocol.h"
+
+#ifdef DBG_DISP_ENABLED(DBG_ETHER)
+
+    static void display_ether_pkt(char* title, ether_pkt_t* pkt, int total_size) {
+        ether_hdr_t* hdr = &pkt->hdr;
+
+        plat_printf("---------------- %s ----------------", title);
+        plat_printf("\t len: %d bytes\n", total_size);
+        dbg_dump_hwaddr("\t dest: ", hdr->dest, ETHER_HWA_SIZE);
+        dbg_dump_hwaddr("\t src: ", hdr->src, ETHER_HWA_SIZE);
+        plat_printf("\t type: %04x\n", x_ntohs(hdr->protocol));
+        switch (x_ntohs(hdr->protocol))
+        {
+        case NET_PROTOCOL_ARP:
+            plat_printf("\t arp\n");
+            break;
+        case NET_PROTOCOL_IPv4:
+            plat_printf("\t ipv4\n");
+            break;
+        default:
+            plat_printf("\t unknown\n");
+            break;
+        }
+
+        plat_printf("\n");
+    }
+
+#endif
 
 static net_err_t ether_open(struct _netif_t* netif) {
     return NET_ERR_OK;
@@ -29,13 +60,16 @@ static net_err_t is_pkt_ok(ether_pkt_t* frame, int total_size) {
 static net_err_t ether_in(struct _netif_t* netif, pktbuf_t* buf) {
     dbg_info(DBG_ETHER, "ether in");
 
+    pktbuf_set_cont(buf, sizeof(ether_hdr_t));
     ether_pkt_t* pkt = (ether_pkt_t*)pktbuf_data(buf);
+
     net_err_t err;
     if((err = is_pkt_ok(pkt, buf->total_size)) < 0) {
         dbg_warning(DBG_ETHER, "ether pkt error");
         return err;
     }
 
+    display_ether_pkt("ether in", pkt, buf->total_size);
     pktbuf_free(buf);
     return NET_ERR_OK;
 }

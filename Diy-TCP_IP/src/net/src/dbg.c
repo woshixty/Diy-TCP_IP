@@ -67,3 +67,12 @@ void dump_ip_buf(const char* msg, const uint8_t* ip) {
         plat_printf("0.0.0.0\n");
     }
 }
+
+void dbg_dump_hwaddr(const char* msg, const uint8_t* hwaddr, int len) {
+    printf("%s: ", msg);
+    for (int i = 0; i < len; i++) {
+        printf("%02X", hwaddr[i]);
+        if (i != len - 1) printf(":");
+    }
+    printf("\n");
+}
