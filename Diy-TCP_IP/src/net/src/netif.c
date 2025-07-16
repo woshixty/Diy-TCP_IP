@@ -7,6 +7,8 @@
 #include "exmsg.h"
 #include "mblock.h"
 #include "pktbuf.h"
+#include "protocol.h"
+#include "ether.h"
 
 static netif_t netif_buffer[NETIF_DEV_CNT];     // 网络接口的数量
 static mblock_t netif_mblock;                   // 接口分配结构
@@ -370,12 +372,23 @@ pktbuf_t* netif_get_in(netif_t* netif, int tmo) {
 net_err_t netif_out(netif_t* netif, ipaddr_t * ipaddr, pktbuf_t* buf) {
     // 缺省情况，将数据包插入就绪队列，然后通知驱动程序开始发送
     // 硬件当前发送如果未进行，则启动发送，否则不处理，等待硬件中断自动触发进行发送
-    net_err_t err = netif_put_out(netif, buf, -1);
-    if (err < 0) {
-        dbg_info(DBG_NETIF, "send to netif queue failed. err: %d", err);
-        return err;
+    if(netif->link_layer) {
+        net_err_t err = ether_raw_out(netif, NET_PROTOCOL_ARP, ether_broadcast_addr(), buf);
+        if(err < 0) {
+            dbg_warning(DBG_NETIF, "netif link out err");
+            return err;
+        }
+        return NET_ERR_OK;
     }
-    
-    // 启动发送
-    return netif->ops->xmit(netif);
+    else
+    {
+        net_err_t err = netif_put_out(netif, buf, -1);
+        if (err < 0) {
+            dbg_info(DBG_NETIF, "send to netif queue failed. err: %d", err);
+            return err;
+        }
+        
+        // 启动发送
+        return netif->ops->xmit(netif);
+    }
 }

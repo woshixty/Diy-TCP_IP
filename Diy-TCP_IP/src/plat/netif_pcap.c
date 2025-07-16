@@ -79,7 +79,7 @@ void xmit_thread(void* arg) {
 static net_err_t netif_pcap_open(struct _netif_t* netif, void* ops_data) {
     // 打开pcap设备
     pcap_data_t* dev_data = (pcap_data_t*)ops_data;
-    pcap_t* pcap = pcap_device_open(dev_data->ip, dev_data->hwaddr);
+    pcap_t * pcap = pcap_device_open(dev_data->ip, dev_data->hwaddr);
     if (pcap == (pcap_t*)0) {
         dbg_error(DBG_NETIF, "pcap open failed! name: %s\n", netif->name);
         return NET_ERR_IO;
@@ -87,7 +87,7 @@ static net_err_t netif_pcap_open(struct _netif_t* netif, void* ops_data) {
     netif->ops_data = pcap;
 
     netif->type = NETIF_TYPE_ETHER;         // 以太网类型
-    netif->mtu = ETHER_MTU;                 // 1500字节
+    netif->mtu = ETHER_MTU;            // 1500字节
     netif_set_hwaddr(netif, dev_data->hwaddr, NETIF_HWADDR_SIZE);
 
     sys_thread_create(xmit_thread, netif);
